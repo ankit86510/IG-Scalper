@@ -1,0 +1,42 @@
+env: "paper"    # paper or live
+timeframes:
+  primary: "1min"
+  confirm: "5min"
+  trend: "15min"
+ig:
+  api_key: "${IG_API_KEY}"
+  username: "${IG_USERNAME}"
+  password: "${IG_PASSWORD}"
+  account_type: "DEMO"   # DEMO or LIVE
+risk:
+  account_equity: 10000
+  invest_per_trade: 1000
+  max_loss_pct_invest: 6.0
+  max_daily_loss_pct: 4.0
+  max_losing_trades: 3
+execution:
+  time_in_force: "FILL_OR_KILL"
+  use_trailing_stop: true
+strategy:
+  name: "ema_cross_breakout"
+  params:
+    fast: 9
+    slow: 21
+    atr_period: 14
+    rr_take_profit: 1.5
+symbols:
+  - "IX.D.FTSE.CFD.IP"
+  - "IX.D.DAX.CFD.IP"
+  - "IX.D.SPTRD.DAILY.IP"
+  - "IX.D.NASDAQ.CFD.IP"
+  - "CS.D.EURUSD.CFD.IP"
+  - "CS.D.GBPUSD.CFD.IP"
+  - "CS.D.USDJPY.CFD.IP"
+  - "CS.D.GBPJPY.CFD.IP"
+  - "CMD.GC.CFD.IP"
+  - "CMD.USCrude.CFD.IP"
+logging:
+  level: "INFO"
+  sink: "logs/bot.log"
+db:
+  url: "sqlite:///bot.db"
