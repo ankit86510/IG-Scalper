@@ -3,5 +3,5 @@ pandas
 numpy
 tenacity
 pyyaml
-loguru
+logging
 dotenv

@@ -4,9 +4,9 @@ timeframes:
   confirm: "5min"
   trend: "15min"
 ig:
-  api_key: "${IG_API_KEY}"
-  username: "${IG_USERNAME}"
-  password: "${IG_PASSWORD}"
+  api_key: "d73643a9e0d2672d848ca044f381f4ba4b6d112d"
+  username: "ig_scalper_demo"
+  password: "Demo.Scalper123!"
   account_type: "DEMO"   # DEMO or LIVE
 risk:
   account_equity: 10000
@@ -25,16 +25,21 @@ strategy:
     atr_period: 14
     rr_take_profit: 1.5
 symbols:
-  - "IX.D.FTSE.CFD.IP"
-  - "IX.D.DAX.CFD.IP"
-  - "IX.D.SPTRD.DAILY.IP"
-  - "IX.D.NASDAQ.CFD.IP"
+  # Major Forex Pairs (Most Likely to Work)
   - "CS.D.EURUSD.CFD.IP"
-  - "CS.D.GBPUSD.CFD.IP"
-  - "CS.D.USDJPY.CFD.IP"
-  - "CS.D.GBPJPY.CFD.IP"
-  - "CMD.GC.CFD.IP"
-  - "CMD.USCrude.CFD.IP"
+  #- "CS.D.GBPUSD.CFD.IP"
+  #- "CS.D.USDJPY.CFD.IP"
+
+  # Indices (Common EPICs - verify these)
+  #- "IX.D.FTSE.DAILY.IP"      # FTSE 100 (changed from CFD.IP)
+  #- "IX.D.DAX.DAILY.IP"       # DAX (changed from CFD.IP)
+  #- "IX.D.SPTRD.DAILY.IP"     # S&P 500 (kept as is)
+
+  # Try these alternatives if above don't work:
+  # - "IX.D.NASDAQ.DAILY.IP"  # NASDAQ (try DAILY instead of CFD)
+  # - "CS.D.GBPJPY.CFD.IP"    # GBP/JPY
+  # - "CS.D.USCGC.IP"         # Gold (alternative)
+  # - "CS.D.LCO.IP"           # Brent Crude (alternative to US Crude)
 logging:
   level: "INFO"
   sink: "logs/bot.log"
