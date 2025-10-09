@@ -16,7 +16,7 @@ risk:
   max_losing_trades: 3
 execution:
   time_in_force: "FILL_OR_KILL"
-  use_trailing_stop: true
+  use_trailing_stop: false  # Start with false for debugging
 strategy:
   name: "ema_cross_breakout"
   params:
@@ -25,23 +25,16 @@ strategy:
     atr_period: 14
     rr_take_profit: 1.5
 symbols:
-  # Major Forex Pairs (Most Likely to Work)
-  #- "CS.D.EURUSD.CFD.IP"
-  #- "CS.D.GBPUSD.CFD.IP"
-  #- "CS.D.USDJPY.CFD.IP"
+  # Start with just 1-2 liquid markets for testing
+  - "CS.D.EURUSD.CFD.IP"   # EUR/USD - most liquid
+  - "CS.D.GBPUSD.CFD.IP"   # GBP/USD - very liquid
 
-  # Indices (Common EPICs - verify these)
-  #- "IX.D.FTSE.DAILY.IP"      # FTSE 100 (changed from CFD.IP)
-  #- "IX.D.DAX.DAILY.IP"       # DAX (changed from CFD.IP)
-  # "IX.D.SPTRD.DAILY.IP"     # S&P 500 (kept as is)
+  # Add more after you see it working:
+  # - "IX.D.SPTRD.DAILY.IP"     # S&P 500
+  # - "CS.D.CFEGOLD.CEB.IP"     # Gold
 
-  # Try these alternatives if above don't work:
-  # - "IX.D.NASDAQ.DAILY.IP"  # NASDAQ (try DAILY instead of CFD)
-  # - "CS.D.GBPJPY.CFD.IP"    # GBP/JPY
-  - "CS.D.CFEGOLD.CEB.IP"         # Gold (alternative)
-  # - "CS.D.LCO.IP"           # Brent Crude (alternative to US Crude)
 logging:
-  level: "INFO"
+  level: "DEBUG"  # Use DEBUG to see everything
   sink: "logs/bot.log"
 db:
   url: "sqlite:///bot.db"
