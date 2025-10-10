@@ -14,6 +14,7 @@ from broker.ig_client import IGClient
 from broker.order_exec import enforce_market_rules, estimate_pip_value
 from strategy.ema_cross_breakout import EMACrossBreakout
 
+
 RES = {"1min": "MINUTE", "5min": "MINUTE_5", "15min": "MINUTE_15"}
 
 

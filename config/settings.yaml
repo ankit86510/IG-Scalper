@@ -8,6 +8,8 @@ ig:
   username: "provaig123"
   password: "Demoqaz1!"
   account_type: "DEMO"   # DEMO or LIVE
+polygon:
+  POLYGON_API_KEY: "JWZDwvNkpPes9uxwokP9zQ87yClwpSDq"
 risk:
   account_equity: 10000
   invest_per_trade: 1000
@@ -26,12 +28,12 @@ strategy:
     rr_take_profit: 1.5
 symbols:
   # Start with just 1-2 liquid markets for testing
-  - "CS.D.EURUSD.CFD.IP"   # EUR/USD - most liquid
-  - "CS.D.GBPUSD.CFD.IP"   # GBP/USD - very liquid
+  #- "CS.D.EURUSD.CFD.IP"   # EUR/USD - most liquid
+  #- "CS.D.GBPUSD.CFD.IP"   # GBP/USD - very liquid
 
   # Add more after you see it working:
   # - "IX.D.SPTRD.DAILY.IP"     # S&P 500
-  # - "CS.D.CFEGOLD.CEB.IP"     # Gold
+  - "CS.D.CFEGOLD.CEB.IP"     # Gold
 
 logging:
   level: "DEBUG"  # Use DEBUG to see everything

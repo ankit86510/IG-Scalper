@@ -1,340 +1,53 @@
-2025-10-02 22:55:00,971 INFO ig-scalper: Logged in to IG successfully
-2025-10-02 22:55:01,179 INFO ig-scalper: Starting equity: £28715.41
-2025-10-02 22:55:01,262 INFO ig-scalper: Synced 0 existing positions
-2025-10-02 22:58:41,845 INFO ig-scalper: Logged in to IG successfully
-2025-10-02 22:58:42,053 INFO ig-scalper: Starting equity: £28715.41
-2025-10-02 22:58:42,131 INFO ig-scalper: Synced 0 existing positions
-2025-10-02 22:59:28,574 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:00:20,038 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:01:11,475 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:02:02,948 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:02:54,417 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:03:46,003 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:04:37,403 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:05:28,918 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:06:20,509 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:07:12,144 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:08:03,545 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:08:55,245 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:09:46,754 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:10:38,920 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-02 23:11:32,459 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:00:29,430 INFO ig-scalper: Logged in to IG successfully
-2025-10-08 16:00:29,683 INFO ig-scalper: Starting equity: £28715.41
-2025-10-08 16:00:29,765 INFO ig-scalper: Synced 0 existing positions
-2025-10-08 16:01:16,145 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:02:07,811 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:02:59,471 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:03:50,994 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:04:42,567 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:05:34,099 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 16:06:25,432 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 22:02:16,475 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
-2025-10-08 22:02:17,663 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
-2025-10-08 22:02:17,663 INFO ig-scalper: Logged in to IG successfully
-2025-10-08 22:02:17,663 INFO ig-scalper: Monitoring EPICs: ['CS.D.EURUSD.CFD.IP', 'CS.D.GBPUSD.CFD.IP']
-2025-10-08 22:02:17,663 INFO ig-scalper: Strategy initialized: EMA(9/21), ATR(14), RR=1.5
-2025-10-08 22:02:17,747 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.EURUSD.CFD.IP HTTP/1.1" 200 1888
-2025-10-08 22:02:17,756 INFO ig-scalper: Loaded market details for CS.D.EURUSD.CFD.IP
-2025-10-08 22:02:17,829 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.GBPUSD.CFD.IP HTTP/1.1" 200 1891
-2025-10-08 22:02:17,829 INFO ig-scalper: Loaded market details for CS.D.GBPUSD.CFD.IP
-2025-10-08 22:02:18,003 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
-2025-10-08 22:02:18,003 INFO ig-scalper: Starting equity: £28715.41
-2025-10-08 22:02:18,078 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
-2025-10-08 22:02:18,078 INFO ig-scalper: Found 0 open positions: []
-2025-10-08 22:02:18,078 DEBUG ig-scalper: === Loop 1 ===
-2025-10-08 22:02:18,078 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:18,173 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:18,195 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:01:00
-2025-10-08 22:02:18,297 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7051
-2025-10-08 22:02:18,313 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Trend filter = None
-2025-10-08 22:02:18,313 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: No signal generated
-2025-10-08 22:02:18,313 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:18,401 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:18,417 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:01:00
-2025-10-08 22:02:18,528 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7052
-2025-10-08 22:02:18,536 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Trend filter = None
-2025-10-08 22:02:18,536 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: No signal generated
-2025-10-08 22:02:23,548 DEBUG ig-scalper: === Loop 2 ===
-2025-10-08 22:02:23,548 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:23,643 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:23,667 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:01:00
-2025-10-08 22:02:23,667 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:01:00)
-2025-10-08 22:02:23,667 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:23,779 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:23,796 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:01:00
-2025-10-08 22:02:23,796 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:01:00)
-2025-10-08 22:02:28,798 DEBUG ig-scalper: === Loop 3 ===
-2025-10-08 22:02:28,798 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:28,894 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:28,902 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:29,308 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7051
-2025-10-08 22:02:29,343 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Trend filter = None
-2025-10-08 22:02:29,343 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: No signal generated
-2025-10-08 22:02:29,343 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:29,452 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:29,469 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:29,612 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7052
-2025-10-08 22:02:29,638 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Trend filter = None
-2025-10-08 22:02:29,638 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: No signal generated
-2025-10-08 22:02:34,642 DEBUG ig-scalper: === Loop 4 ===
-2025-10-08 22:02:34,642 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:34,731 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:34,754 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:34,754 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:34,754 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:34,857 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:34,865 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:34,865 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:39,867 DEBUG ig-scalper: === Loop 5 ===
-2025-10-08 22:02:39,867 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:39,952 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:39,969 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:39,969 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:39,969 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:40,068 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:40,084 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:40,084 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:45,091 DEBUG ig-scalper: === Loop 6 ===
-2025-10-08 22:02:45,091 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:45,190 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:45,199 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:45,199 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:45,199 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:45,292 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:45,314 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:45,314 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:50,319 DEBUG ig-scalper: === Loop 7 ===
-2025-10-08 22:02:50,319 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:50,410 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:50,427 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:50,427 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:50,427 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:50,511 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:50,528 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:50,528 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:55,533 DEBUG ig-scalper: === Loop 8 ===
-2025-10-08 22:02:55,533 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:02:55,644 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:55,653 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:55,653 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:02:55,653 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:02:55,749 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:02:55,752 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:02:55,752 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:00,760 DEBUG ig-scalper: === Loop 9 ===
-2025-10-08 22:03:00,760 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:00,869 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:00,884 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:00,884 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:00,884 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:01,037 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:01,067 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:01,067 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:06,079 DEBUG ig-scalper: === Loop 10 ===
-2025-10-08 22:03:06,230 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
-2025-10-08 22:03:06,238 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 22:03:06,340 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
-2025-10-08 22:03:06,340 INFO ig-scalper: Found 0 open positions: []
-2025-10-08 22:03:06,340 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:06,463 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:06,479 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:06,479 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:06,487 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:06,570 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:06,585 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:06,593 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:11,597 DEBUG ig-scalper: === Loop 11 ===
-2025-10-08 22:03:11,598 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:11,692 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 403 59
-2025-10-08 22:03:11,692 ERROR ig-scalper: Failed to get bars for CS.D.EURUSD.CFD.IP: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200
-2025-10-08 22:03:11,692 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:11,764 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 403 59
-2025-10-08 22:03:11,764 ERROR ig-scalper: Failed to get bars for CS.D.GBPUSD.CFD.IP: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200
-2025-10-08 22:03:16,767 DEBUG ig-scalper: === Loop 12 ===
-2025-10-08 22:03:16,767 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:16,885 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 403 59
-2025-10-08 22:03:16,885 ERROR ig-scalper: Failed to get bars for CS.D.EURUSD.CFD.IP: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200
-2025-10-08 22:03:16,885 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:16,994 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 403 59
-2025-10-08 22:03:16,994 ERROR ig-scalper: Failed to get bars for CS.D.GBPUSD.CFD.IP: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200
-2025-10-08 22:03:22,000 DEBUG ig-scalper: === Loop 13 ===
-2025-10-08 22:03:22,000 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:22,093 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:22,101 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:22,101 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:22,101 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:22,192 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:22,200 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:22,200 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:27,207 DEBUG ig-scalper: === Loop 14 ===
-2025-10-08 22:03:27,207 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:27,299 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:27,307 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:27,307 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:27,307 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:27,410 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:27,427 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:02:00
-2025-10-08 22:03:27,427 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:02:00)
-2025-10-08 22:03:32,434 DEBUG ig-scalper: === Loop 15 ===
-2025-10-08 22:03:32,434 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:32,532 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:32,548 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:32,640 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7051
-2025-10-08 22:03:32,675 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Trend filter = None
-2025-10-08 22:03:32,675 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: No signal generated
-2025-10-08 22:03:32,675 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:32,807 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:32,840 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:32,927 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7052
-2025-10-08 22:03:32,944 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Trend filter = None
-2025-10-08 22:03:32,944 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: No signal generated
-2025-10-08 22:03:37,949 DEBUG ig-scalper: === Loop 16 ===
-2025-10-08 22:03:37,949 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:38,035 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:38,058 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:38,058 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:38,058 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:38,218 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:38,243 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:38,243 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:43,251 DEBUG ig-scalper: === Loop 17 ===
-2025-10-08 22:03:43,251 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:43,344 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:43,360 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:43,360 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:43,360 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:43,463 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:43,481 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:43,481 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:48,489 DEBUG ig-scalper: === Loop 18 ===
-2025-10-08 22:03:48,489 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:48,582 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:48,607 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:48,607 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:48,607 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:48,702 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:48,723 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:48,723 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:53,724 DEBUG ig-scalper: === Loop 19 ===
-2025-10-08 22:03:53,724 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:53,832 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:53,848 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:53,848 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:53,848 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:53,942 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:53,952 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:53,952 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:58,959 DEBUG ig-scalper: === Loop 20 ===
-2025-10-08 22:03:59,131 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
-2025-10-08 22:03:59,131 INFO ig-scalper: Daily P&L: 0.00%, Current equity: £28715.41
-2025-10-08 22:03:59,217 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
-2025-10-08 22:03:59,217 INFO ig-scalper: Found 0 open positions: []
-2025-10-08 22:03:59,217 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:03:59,321 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:59,339 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:59,339 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:03:59,339 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:03:59,439 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:03:59,465 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:03:59,465 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:04,470 DEBUG ig-scalper: === Loop 21 ===
-2025-10-08 22:04:04,470 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:04:04,559 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:04,575 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:04,575 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:04,575 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:04:04,679 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:04,697 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:04,697 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:09,705 DEBUG ig-scalper: === Loop 22 ===
-2025-10-08 22:04:09,705 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:04:09,804 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:09,838 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:09,839 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:09,839 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:04:09,932 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:09,941 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:09,941 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:14,946 DEBUG ig-scalper: === Loop 23 ===
-2025-10-08 22:04:14,946 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:04:15,146 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:15,160 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:15,160 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:15,160 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:04:15,276 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:15,294 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:15,294 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:20,302 DEBUG ig-scalper: === Loop 24 ===
-2025-10-08 22:04:20,304 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-08 22:04:20,394 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:20,420 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:20,420 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:20,420 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-08 22:04:20,520 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7032
-2025-10-08 22:04:20,545 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-08 17:03:00
-2025-10-08 22:04:20,545 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-08 17:03:00)
-2025-10-08 22:04:24,765 INFO ig-scalper: Interrupted by user, exiting...
-2025-10-09 08:53:49,938 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
-2025-10-09 08:53:50,529 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
-2025-10-09 08:53:50,529 INFO ig-scalper: Logged in to IG successfully
-2025-10-09 08:53:50,529 INFO ig-scalper: Monitoring EPICs: ['CS.D.EURUSD.CFD.IP', 'CS.D.GBPUSD.CFD.IP']
-2025-10-09 08:53:50,529 INFO ig-scalper: Strategy initialized: EMA(9/21), ATR(14), RR=1.5
-2025-10-09 08:53:50,709 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.EURUSD.CFD.IP HTTP/1.1" 200 1889
-2025-10-09 08:53:50,717 INFO ig-scalper: Loaded market details for CS.D.EURUSD.CFD.IP
-2025-10-09 08:53:50,848 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.GBPUSD.CFD.IP HTTP/1.1" 200 1890
-2025-10-09 08:53:50,848 INFO ig-scalper: Loaded market details for CS.D.GBPUSD.CFD.IP
-2025-10-09 08:53:51,066 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
-2025-10-09 08:53:51,066 INFO ig-scalper: Starting equity: £28715.41
-2025-10-09 08:53:51,199 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
-2025-10-09 08:53:51,207 INFO ig-scalper: Found 0 open positions: []
-2025-10-09 08:53:51,207 DEBUG ig-scalper: === Loop 1 ===
-2025-10-09 08:53:51,207 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-09 08:53:51,359 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7019
-2025-10-09 08:53:51,416 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:53:51,602 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7054
-2025-10-09 08:53:51,653 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Trend filter = None
-2025-10-09 08:53:51,653 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: No signal generated
-2025-10-09 08:53:51,653 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-09 08:53:51,813 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7017
-2025-10-09 08:53:51,854 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:53:52,142 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7054
-2025-10-09 08:53:52,168 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Trend filter = None
-2025-10-09 08:53:52,168 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: No signal generated
-2025-10-09 08:53:57,174 DEBUG ig-scalper: === Loop 2 ===
-2025-10-09 08:53:57,174 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-09 08:53:57,553 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7019
-2025-10-09 08:53:57,657 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:53:57,657 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:53:57,657 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-09 08:53:57,864 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7017
-2025-10-09 08:53:57,894 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:53:57,894 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:02,902 DEBUG ig-scalper: === Loop 3 ===
-2025-10-09 08:54:02,902 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-09 08:54:03,170 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7019
-2025-10-09 08:54:03,302 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:54:03,302 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:03,302 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-09 08:54:03,448 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7017
-2025-10-09 08:54:03,524 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:54:03,532 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:08,538 DEBUG ig-scalper: === Loop 4 ===
-2025-10-09 08:54:08,539 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-09 08:54:08,700 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7019
-2025-10-09 08:54:08,744 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:54:08,744 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:08,744 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-09 08:54:08,899 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7017
-2025-10-09 08:54:08,940 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:54:08,940 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:13,942 DEBUG ig-scalper: === Loop 5 ===
-2025-10-09 08:54:13,942 DEBUG ig-scalper: Processing CS.D.EURUSD.CFD.IP...
-2025-10-09 08:54:14,162 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.EURUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7019
-2025-10-09 08:54:14,204 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:54:14,212 DEBUG ig-scalper: CS.D.EURUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:14,212 DEBUG ig-scalper: Processing CS.D.GBPUSD.CFD.IP...
-2025-10-09 08:54:14,371 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.GBPUSD.CFD.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7017
-2025-10-09 08:54:14,444 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Got 20 bars, latest: 2025-10-09 03:53:00
-2025-10-09 08:54:14,444 DEBUG ig-scalper: CS.D.GBPUSD.CFD.IP: Waiting for new bar (current: 2025-10-09 03:53:00)
-2025-10-09 08:54:15,517 INFO ig-scalper: Interrupted by user, exiting...
+2025-10-10 08:33:40,093 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
+2025-10-10 08:33:40,399 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
+2025-10-10 08:33:40,402 INFO ig-scalper: Logged in to IG successfully
+2025-10-10 08:33:40,403 INFO ig-scalper: Monitoring EPICs: ['CS.D.CFEGOLD.CEB.IP']
+2025-10-10 08:33:40,403 INFO ig-scalper: Strategy initialized: EMA(9/21), ATR(14), RR=1.5
+2025-10-10 08:33:40,507 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1810
+2025-10-10 08:33:40,510 INFO ig-scalper: Loaded market details for CS.D.CFEGOLD.CEB.IP
+2025-10-10 08:33:40,609 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
+2025-10-10 08:33:40,611 INFO ig-scalper: Starting equity: £28715.41
+2025-10-10 08:33:40,685 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
+2025-10-10 08:33:40,686 INFO ig-scalper: Found 0 open positions: []
+2025-10-10 08:33:40,686 DEBUG ig-scalper: === Loop 1 ===
+2025-10-10 08:33:40,687 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:33:40,782 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:33:40,790 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:33:40,925 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7072
+2025-10-10 08:33:40,933 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Trend filter = None
+2025-10-10 08:33:40,934 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: No signal generated
+2025-10-10 08:33:45,935 DEBUG ig-scalper: === Loop 2 ===
+2025-10-10 08:33:45,935 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:33:46,023 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:33:46,031 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:33:46,031 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 08:33:51,033 DEBUG ig-scalper: === Loop 3 ===
+2025-10-10 08:33:51,034 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:33:51,132 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:33:51,141 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:33:51,141 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 08:33:56,143 DEBUG ig-scalper: === Loop 4 ===
+2025-10-10 08:33:56,144 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:33:56,247 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:33:56,275 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:33:56,275 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 08:34:01,277 DEBUG ig-scalper: === Loop 5 ===
+2025-10-10 08:34:01,277 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:34:01,378 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:34:01,390 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:34:01,390 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 08:34:06,391 DEBUG ig-scalper: === Loop 6 ===
+2025-10-10 08:34:06,391 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:34:06,490 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:34:06,500 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:34:06,501 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 08:34:11,502 DEBUG ig-scalper: === Loop 7 ===
+2025-10-10 08:34:11,502 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:34:11,603 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:34:11,621 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:34:11,622 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 08:34:16,623 DEBUG ig-scalper: === Loop 8 ===
+2025-10-10 08:34:16,624 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 08:34:16,734 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
+2025-10-10 08:34:16,742 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
+2025-10-10 08:34:16,742 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
