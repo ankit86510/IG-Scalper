@@ -51,3 +51,214 @@
 2025-10-10 08:34:16,734 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7052
 2025-10-10 08:34:16,742 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 03:33:00
 2025-10-10 08:34:16,742 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 03:33:00)
+2025-10-10 09:00:01,846 INFO ig-scalper: ================================================================================
+2025-10-10 09:00:01,846 INFO ig-scalper: IG SCALPER - RATE-LIMITED POLLING MODE
+2025-10-10 09:00:01,846 INFO ig-scalper: ================================================================================
+2025-10-10 09:00:01,853 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
+2025-10-10 09:00:02,185 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
+2025-10-10 09:00:02,348 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:03,575 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
+2025-10-10 09:00:03,666 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:03,751 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:03,825 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:03,918 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:00:04,006 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:00:04,087 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:00:04,161 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:00:04,238 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:00:04,313 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:00:04,387 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1811
+2025-10-10 09:00:04,466 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1811
+2025-10-10 09:00:04,559 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:04,638 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:04,733 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:04,819 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:04,897 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:04,979 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,078 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,155 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,235 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,315 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,396 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,480 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,566 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,665 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,744 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1812
+2025-10-10 09:00:05,829 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:05,830 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:06,404 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:06,406 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:06,977 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:06,977 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:07,560 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:07,561 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:08,135 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:08,137 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:08,716 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:08,717 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:09,286 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:09,288 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:09,863 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:09,865 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:10,434 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:10,437 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:11,013 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:11,015 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:11,593 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:11,595 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:12,166 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:12,167 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:12,738 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:12,740 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:13,317 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:13,318 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:13,888 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:13,890 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:14,501 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:14,502 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:15,074 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:15,076 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:15,662 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:15,663 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:16,234 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:16,235 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:16,839 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:16,840 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:17,411 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:17,414 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:17,989 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:17,991 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:18,591 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:18,592 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:19,168 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:19,170 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:19,749 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:19,749 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:20,320 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:20,321 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:20,909 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:20,911 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:21,478 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:21,480 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:00:22,053 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:00:22,053 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:12:53,410 INFO ig-scalper: ================================================================================
+2025-10-10 09:12:53,411 INFO ig-scalper: IG SCALPER - RATE-LIMITED POLLING MODE
+2025-10-10 09:12:53,411 INFO ig-scalper: ================================================================================
+2025-10-10 09:12:53,420 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
+2025-10-10 09:12:53,830 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
+2025-10-10 09:12:53,988 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:55,217 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
+2025-10-10 09:12:55,299 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:55,390 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:55,483 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:55,570 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:55,644 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:55,733 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:55,806 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:55,914 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:56,008 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:56,089 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:56,165 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:56,244 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:56,317 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1813
+2025-10-10 09:12:56,410 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,495 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,592 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,672 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,749 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,828 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,898 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-10 09:12:56,976 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:57,050 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:57,124 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:57,211 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:57,292 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:57,366 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:12:57,432 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:12:57,434 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:12:58,005 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:12:58,005 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:12:58,575 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:12:58,575 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:12:59,204 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:12:59,205 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:12:59,772 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:12:59,774 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:00,347 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:00,348 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:00,921 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:00,922 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:01,506 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:01,507 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:02,125 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:02,126 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:02,692 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:02,693 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:03,277 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:03,278 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:03,861 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:03,862 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:04,434 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:04,435 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:05,000 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:05,001 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:05,571 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:05,573 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:06,152 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:06,153 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:06,718 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:06,718 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:07,337 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:07,339 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:07,909 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:07,910 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:08,482 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:08,483 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:09,046 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:09,049 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:09,612 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:09,613 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:10,181 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:10,182 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:10,749 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:10,750 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:11,322 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:11,325 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:11,888 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:11,889 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:12,451 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:12,451 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:13,023 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:13,024 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:13:13,587 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 403 59
+2025-10-10 09:13:13,588 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Error: 403 Client Error: Forbidden for url: https://demo-api.ig.com/gateway/deal/markets/CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:24:03,398 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
+2025-10-10 09:24:03,723 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
+2025-10-10 09:24:03,725 INFO ig-scalper: Logged in to IG successfully
+2025-10-10 09:24:03,725 INFO ig-scalper: Monitoring EPICs: ['CS.D.CFEGOLD.CEB.IP']
+2025-10-10 09:24:03,726 INFO ig-scalper: Strategy initialized: EMA(9/21), ATR(14), RR=1.5
+2025-10-10 09:24:03,852 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1815
+2025-10-10 09:24:03,853 INFO ig-scalper: Loaded market details for CS.D.CFEGOLD.CEB.IP
+2025-10-10 09:24:03,965 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
+2025-10-10 09:24:03,966 INFO ig-scalper: Starting equity: £28715.41
+2025-10-10 09:24:04,041 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
+2025-10-10 09:24:04,042 INFO ig-scalper: Found 0 open positions: []
+2025-10-10 09:24:04,043 DEBUG ig-scalper: === Loop 1 ===
+2025-10-10 09:24:04,043 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 09:24:04,150 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7050
+2025-10-10 09:24:04,178 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 04:23:00
+2025-10-10 09:24:04,328 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE_15&max=200 HTTP/1.1" 200 7072
+2025-10-10 09:24:04,344 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Trend filter = None
+2025-10-10 09:24:04,345 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: No signal generated
+2025-10-10 09:24:09,346 DEBUG ig-scalper: === Loop 2 ===
+2025-10-10 09:24:09,346 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 09:24:09,447 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7050
+2025-10-10 09:24:09,453 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 04:23:00
+2025-10-10 09:24:09,453 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 04:23:00)
+2025-10-10 09:24:14,455 DEBUG ig-scalper: === Loop 3 ===
+2025-10-10 09:24:14,456 DEBUG ig-scalper: Processing CS.D.CFEGOLD.CEB.IP...
+2025-10-10 09:24:14,572 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE&max=200 HTTP/1.1" 200 7050
+2025-10-10 09:24:14,588 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Got 20 bars, latest: 2025-10-10 04:23:00
+2025-10-10 09:24:14,588 DEBUG ig-scalper: CS.D.CFEGOLD.CEB.IP: Waiting for new bar (current: 2025-10-10 04:23:00)
+2025-10-10 09:24:15,973 INFO ig-scalper: Interrupted by user, exiting...
