@@ -1,6 +1,6 @@
 env: "paper"    # paper or live
 timeframes:
-  primary: "3min"
+  primary: "1min"
   confirm: "5min"
   trend: "15min"
 
@@ -30,7 +30,7 @@ execution:
 # AI Strategy Configuration
 ai_strategy:
   # Pattern recognition settings
-  confidence_threshold: 0.65   # Minimum confidence to take a trade (0-1)
+  confidence_threshold: 0.30   # Minimum confidence to take a trade (0-1)
   lookback_candles: 50         # Number of candles to analyze
 
   # Risk management

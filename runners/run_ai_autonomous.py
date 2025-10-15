@@ -7,16 +7,7 @@ import json
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Windows encoding fix
-import sys
-if sys.platform.startswith('win'):
-    try:
-        sys.stdout.reconfigure(encoding='utf-8')
-        sys.stderr.reconfigure(encoding='utf-8')
-    except:
-        pass
-
-from datetime import datetime
+from datetime import datetime, UTC
 from core.config import load_settings
 from core.logging_utils import setup_logging
 from core.risk import size_by_invested_capital, daily_lockout
@@ -175,7 +166,7 @@ def sync_positions_from_broker(ig, position_manager, log):
 def save_analysis_report(position_manager, filename="ai_analysis_report.json"):
     """Save AI analysis and performance report"""
     report = {
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "performance": position_manager.get_performance_stats(),
         "recent_trades": position_manager.trade_history[-20:],  # Last 20 trades
         "decision_log": position_manager.decision_log[-50:]  # Last 50 decisions
@@ -222,7 +213,7 @@ def main():
 
     # Get configuration
     epics = cfg["symbols"]
-    timeframe = cfg.get("timeframe", "3min")
+    timeframe = cfg.get("timeframe", "1min")
     invest = cfg["risk"]["invest_per_trade"]
     max_loss_pct = cfg["risk"]["max_loss_pct_invest"]
     max_daily_loss_pct = cfg["risk"]["max_daily_loss_pct"]
@@ -241,6 +232,7 @@ def main():
         confidence_threshold=ai_config.get("confidence_threshold", 0.65),
         lookback_candles=ai_config.get("lookback_candles", 50)
     )
+
     log.info(f"✓ AI Pattern Recognizer initialized")
     log.info(f"  - Confidence threshold: {ai_config.get('confidence_threshold', 0.65):.1%}")
     log.info(f"  - Risk/Reward ratio: 1:{ai_config.get('rr_take', 2.0)}")
@@ -358,7 +350,7 @@ def main():
 
                     # Log AI decision
                     decision_entry = {
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(UTC).isoformat(),
                         "epic": epic,
                         "signal": signal is not None,
                         "confidence": signal["meta"]["confidence"] if signal else 0.0

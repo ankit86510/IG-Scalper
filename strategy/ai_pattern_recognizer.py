@@ -1,26 +1,27 @@
+"""
+FIXED: AI Pattern Recognizer with Working Logging
+The issue: logger wasn't properly initialized in the class
+
+Replace the on_bar method and add __init__ logging in:
+strategy/ai_pattern_recognizer.py
+"""
+
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional
+
+# CRITICAL: Import logging utilities
+from core.logging_utils import log_success, log_error, log_warning, safe_log
 import logging
 
 from strategy.base import Strategy
 
+# Create module-level logger
 logger = logging.getLogger(__name__)
 
 
 class AIPatternRecognizer(Strategy):
-    """
-    AI-Powered Pattern Recognition Strategy
-
-    Analyzes OHLC data for multiple technical patterns and makes autonomous
-    trading decisions based on pattern confluence and strength.
-
-    Features:
-    - Multi-pattern detection (candlestick, chart patterns, technical indicators)
-    - Pattern confidence scoring
-    - Autonomous position management
-    - Risk-adjusted position sizing
-    """
+    """AI-Powered Pattern Recognition Strategy with comprehensive logging"""
 
     def __init__(self,
                  atr_period: int = 14,
@@ -28,21 +29,24 @@ class AIPatternRecognizer(Strategy):
                  rr_take: float = 2.0,
                  confidence_threshold: float = 0.65,
                  lookback_candles: int = 50):
-        """
-        Initialize AI Pattern Recognizer
-
-        Args:
-            atr_period: Period for ATR calculation
-            stop_multiplier: Stop loss multiplier on ATR
-            rr_take: Risk-reward ratio for take profit
-            confidence_threshold: Minimum confidence to trade (0-1)
-            lookback_candles: Candles to analyze for patterns
-        """
         self.atr_period = atr_period
         self.stop_multiplier = stop_multiplier
         self.rr_take = rr_take
         self.confidence_threshold = confidence_threshold
         self.lookback = lookback_candles
+
+        # Initialize logger for this instance
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        safe_log(self.logger, 'info', "=" * 80)
+        safe_log(self.logger, 'info', "AI Pattern Recognizer Initialized")
+        safe_log(self.logger, 'info', "=" * 80)
+        safe_log(self.logger, 'info', f"Confidence threshold: {confidence_threshold:.1%}")
+        safe_log(self.logger, 'info', f"Stop multiplier: {stop_multiplier}x ATR")
+        safe_log(self.logger, 'info', f"Risk/Reward: 1:{rr_take}")
+        safe_log(self.logger, 'info', f"Lookback candles: {lookback_candles}")
+        safe_log(self.logger, 'info', "=" * 80)
 
     def calculate_atr(self, df: pd.DataFrame) -> pd.Series:
         """Calculate Average True Range"""
@@ -55,10 +59,8 @@ class AIPatternRecognizer(Strategy):
         ], axis=1).max(axis=1)
         return tr.rolling(self.atr_period).mean()
 
-    # ==================== CANDLESTICK PATTERNS ====================
-
     def detect_hammer(self, df: pd.DataFrame, idx: int = -1) -> Dict:
-        """Detect Hammer/Hanging Man pattern"""
+        """Detect Hammer pattern"""
         o, h, l, c = df['open'].iloc[idx], df['high'].iloc[idx], \
             df['low'].iloc[idx], df['close'].iloc[idx]
 
@@ -70,7 +72,6 @@ class AIPatternRecognizer(Strategy):
         if total == 0:
             return {"detected": False, "confidence": 0.0}
 
-        # Hammer criteria: small body, long lower shadow, little upper shadow
         is_hammer = (
                 lower_shadow > 2 * body and
                 upper_shadow < 0.3 * body and
@@ -80,6 +81,7 @@ class AIPatternRecognizer(Strategy):
         if is_hammer:
             confidence = min(0.8, (lower_shadow / body) * 0.15)
             direction = "BULLISH" if c > o else "BEARISH"
+            safe_log(self.logger, 'debug', f"[Pattern] HAMMER {direction} (conf: {confidence:.1%})")
             return {
                 "detected": True,
                 "confidence": confidence,
@@ -90,7 +92,7 @@ class AIPatternRecognizer(Strategy):
         return {"detected": False, "confidence": 0.0}
 
     def detect_engulfing(self, df: pd.DataFrame, idx: int = -1) -> Dict:
-        """Detect Bullish/Bearish Engulfing pattern"""
+        """Detect Engulfing pattern"""
         if idx < -len(df) + 1:
             return {"detected": False, "confidence": 0.0}
 
@@ -100,43 +102,29 @@ class AIPatternRecognizer(Strategy):
         curr_body = abs(curr_c - curr_o)
         prev_body = abs(prev_c - prev_o)
 
-        # Bullish engulfing
         bullish = (
-                prev_c < prev_o and  # Previous bearish
-                curr_c > curr_o and  # Current bullish
-                curr_o < prev_c and  # Opens below previous close
-                curr_c > prev_o and  # Closes above previous open
-                curr_body > prev_body * 1.2  # Significantly larger
+                prev_c < prev_o and curr_c > curr_o and
+                curr_o < prev_c and curr_c > prev_o and
+                curr_body > prev_body * 1.2
         )
 
-        # Bearish engulfing
         bearish = (
-                prev_c > prev_o and
-                curr_c < curr_o and
-                curr_o > prev_c and
-                curr_c < prev_o and
+                prev_c > prev_o and curr_c < curr_o and
+                curr_o > prev_c and curr_c < prev_o and
                 curr_body > prev_body * 1.2
         )
 
         if bullish:
-            return {
-                "detected": True,
-                "confidence": 0.75,
-                "direction": "BULLISH",
-                "pattern": "ENGULFING"
-            }
+            safe_log(self.logger, 'debug', "[Pattern] BULLISH ENGULFING (conf: 75%)")
+            return {"detected": True, "confidence": 0.75, "direction": "BULLISH", "pattern": "ENGULFING"}
         elif bearish:
-            return {
-                "detected": True,
-                "confidence": 0.75,
-                "direction": "BEARISH",
-                "pattern": "ENGULFING"
-            }
+            safe_log(self.logger, 'debug', "[Pattern] BEARISH ENGULFING (conf: 75%)")
+            return {"detected": True, "confidence": 0.75, "direction": "BEARISH", "pattern": "ENGULFING"}
 
         return {"detected": False, "confidence": 0.0}
 
     def detect_doji(self, df: pd.DataFrame, idx: int = -1) -> Dict:
-        """Detect Doji pattern (indecision)"""
+        """Detect Doji pattern"""
         o, h, l, c = df['open'].iloc[idx], df['high'].iloc[idx], \
             df['low'].iloc[idx], df['close'].iloc[idx]
 
@@ -146,16 +134,11 @@ class AIPatternRecognizer(Strategy):
         if total == 0:
             return {"detected": False, "confidence": 0.0}
 
-        # Doji: very small body relative to range
         is_doji = body / total < 0.1
 
         if is_doji:
-            return {
-                "detected": True,
-                "confidence": 0.5,
-                "direction": "NEUTRAL",
-                "pattern": "DOJI"
-            }
+            safe_log(self.logger, 'debug', "[Pattern] DOJI (indecision)")
+            return {"detected": True, "confidence": 0.5, "direction": "NEUTRAL", "pattern": "DOJI"}
 
         return {"detected": False, "confidence": 0.0}
 
@@ -172,7 +155,6 @@ class AIPatternRecognizer(Strategy):
         if total == 0:
             return {"detected": False, "confidence": 0.0}
 
-        # Shooting star: long upper shadow, small body, little lower shadow
         is_shooting_star = (
                 upper_shadow > 2 * body and
                 lower_shadow < 0.3 * body and
@@ -180,16 +162,10 @@ class AIPatternRecognizer(Strategy):
         )
 
         if is_shooting_star:
-            return {
-                "detected": True,
-                "confidence": 0.7,
-                "direction": "BEARISH",
-                "pattern": "SHOOTING_STAR"
-            }
+            safe_log(self.logger, 'debug', "[Pattern] SHOOTING STAR (conf: 70%)")
+            return {"detected": True, "confidence": 0.7, "direction": "BEARISH", "pattern": "SHOOTING_STAR"}
 
         return {"detected": False, "confidence": 0.0}
-
-    # ==================== CHART PATTERNS ====================
 
     def detect_double_top_bottom(self, df: pd.DataFrame) -> Dict:
         """Detect Double Top/Bottom patterns"""
@@ -200,7 +176,6 @@ class AIPatternRecognizer(Strategy):
         highs = df['high'].rolling(window=5).max()
         lows = df['low'].rolling(window=5).min()
 
-        # Find peaks and troughs
         peaks = []
         troughs = []
 
@@ -210,38 +185,28 @@ class AIPatternRecognizer(Strategy):
             if lows.iloc[i] == df['low'].iloc[i - window:i + window].min():
                 troughs.append((i, lows.iloc[i]))
 
-        # Check for double top
         if len(peaks) >= 2:
             last_two = peaks[-2:]
             price_diff = abs(last_two[0][1] - last_two[1][1]) / last_two[0][1]
             time_diff = last_two[1][0] - last_two[0][0]
 
             if price_diff < 0.02 and window < time_diff < window * 2:
-                return {
-                    "detected": True,
-                    "confidence": 0.7,
-                    "direction": "BEARISH",
-                    "pattern": "DOUBLE_TOP"
-                }
+                safe_log(self.logger, 'debug', "[Pattern] DOUBLE TOP (conf: 70%)")
+                return {"detected": True, "confidence": 0.7, "direction": "BEARISH", "pattern": "DOUBLE_TOP"}
 
-        # Check for double bottom
         if len(troughs) >= 2:
             last_two = troughs[-2:]
             price_diff = abs(last_two[0][1] - last_two[1][1]) / last_two[0][1]
             time_diff = last_two[1][0] - last_two[0][0]
 
             if price_diff < 0.02 and window < time_diff < window * 2:
-                return {
-                    "detected": True,
-                    "confidence": 0.7,
-                    "direction": "BULLISH",
-                    "pattern": "DOUBLE_BOTTOM"
-                }
+                safe_log(self.logger, 'debug', "[Pattern] DOUBLE BOTTOM (conf: 70%)")
+                return {"detected": True, "confidence": 0.7, "direction": "BULLISH", "pattern": "DOUBLE_BOTTOM"}
 
         return {"detected": False, "confidence": 0.0}
 
     def detect_triangle(self, df: pd.DataFrame) -> Dict:
-        """Detect Triangle consolidation patterns"""
+        """Detect Triangle patterns"""
         window = min(20, len(df) // 2)
         if len(df) < window:
             return {"detected": False, "confidence": 0.0}
@@ -250,45 +215,26 @@ class AIPatternRecognizer(Strategy):
         highs = recent['high']
         lows = recent['low']
 
-        # Fit trendlines
         x = np.arange(len(recent))
         high_slope = np.polyfit(x, highs, 1)[0]
         low_slope = np.polyfit(x, lows, 1)[0]
 
-        # Ascending triangle: flat top, rising bottom
         if abs(high_slope) < 0.001 and low_slope > 0.001:
-            return {
-                "detected": True,
-                "confidence": 0.65,
-                "direction": "BULLISH",
-                "pattern": "ASCENDING_TRIANGLE"
-            }
+            safe_log(self.logger, 'debug', "[Pattern] ASCENDING TRIANGLE")
+            return {"detected": True, "confidence": 0.65, "direction": "BULLISH", "pattern": "ASCENDING_TRIANGLE"}
 
-        # Descending triangle: flat bottom, falling top
         if abs(low_slope) < 0.001 and high_slope < -0.001:
-            return {
-                "detected": True,
-                "confidence": 0.65,
-                "direction": "BEARISH",
-                "pattern": "DESCENDING_TRIANGLE"
-            }
+            safe_log(self.logger, 'debug', "[Pattern] DESCENDING TRIANGLE")
+            return {"detected": True, "confidence": 0.65, "direction": "BEARISH", "pattern": "DESCENDING_TRIANGLE"}
 
-        # Symmetrical triangle: converging trendlines
         if high_slope < -0.001 and low_slope > 0.001:
-            # Direction depends on breakout
-            volatility = recent['close'].pct_change().std()
-            return {
-                "detected": True,
-                "confidence": 0.5,
-                "direction": "NEUTRAL",
-                "pattern": "SYMMETRICAL_TRIANGLE",
-                "volatility": volatility
-            }
+            safe_log(self.logger, 'debug', "[Pattern] SYMMETRICAL TRIANGLE")
+            return {"detected": True, "confidence": 0.5, "direction": "NEUTRAL", "pattern": "SYMMETRICAL_TRIANGLE"}
 
         return {"detected": False, "confidence": 0.0}
 
     def detect_head_shoulders(self, df: pd.DataFrame) -> Dict:
-        """Detect Head and Shoulders pattern"""
+        """Detect Head & Shoulders pattern"""
         window = min(30, len(df) // 2)
         if len(df) < window:
             return {"detected": False, "confidence": 0.0}
@@ -296,55 +242,42 @@ class AIPatternRecognizer(Strategy):
         recent = df.tail(window)
         highs = recent['high'].values
 
-        # Find three peaks
         peaks = []
         for i in range(5, len(highs) - 5):
             if highs[i] == max(highs[i - 5:i + 6]):
                 peaks.append((i, highs[i]))
 
         if len(peaks) >= 3:
-            # Check if middle peak is highest (head)
             last_three = peaks[-3:]
             if (last_three[1][1] > last_three[0][1] and
                     last_three[1][1] > last_three[2][1] and
                     abs(last_three[0][1] - last_three[2][1]) / last_three[0][1] < 0.05):
-                return {
-                    "detected": True,
-                    "confidence": 0.75,
-                    "direction": "BEARISH",
-                    "pattern": "HEAD_SHOULDERS"
-                }
+                safe_log(self.logger, 'debug', "[Pattern] HEAD & SHOULDERS (conf: 75%)")
+                return {"detected": True, "confidence": 0.75, "direction": "BEARISH", "pattern": "HEAD_SHOULDERS"}
 
         return {"detected": False, "confidence": 0.0}
 
-    # ==================== MOMENTUM & TREND ====================
-
     def analyze_momentum(self, df: pd.DataFrame) -> Dict:
-        """Analyze price momentum using multiple indicators"""
+        """Analyze momentum"""
         if len(df) < 20:
             return {"strength": 0.0, "direction": "NEUTRAL"}
 
-        # RSI
         delta = df['close'].diff()
         gain = delta.clip(lower=0).rolling(14).mean()
         loss = -delta.clip(upper=0).rolling(14).mean()
         rs = gain / loss
         rsi = 100 - (100 / (1 + rs))
 
-        # Rate of Change
         roc = ((df['close'] - df['close'].shift(10)) / df['close'].shift(10) * 100)
 
-        # Moving Average Convergence
         ema12 = df['close'].ewm(span=12).mean()
         ema26 = df['close'].ewm(span=26).mean()
         macd = ema12 - ema26
 
-        # Aggregate momentum
         rsi_val = rsi.iloc[-1]
         roc_val = roc.iloc[-1]
         macd_val = macd.iloc[-1]
 
-        # Score momentum (-1 to 1)
         momentum_score = 0.0
 
         if not np.isnan(rsi_val):
@@ -371,11 +304,10 @@ class AIPatternRecognizer(Strategy):
         }
 
     def detect_trend_strength(self, df: pd.DataFrame) -> Dict:
-        """Detect trend strength using ADX-like calculation"""
+        """Detect trend strength"""
         if len(df) < 25:
             return {"strength": 0.0, "direction": "NEUTRAL"}
 
-        # Simple ADX approximation
         high_low = df['high'] - df['low']
         high_close = (df['high'] - df['close'].shift()).abs()
         low_close = (df['low'] - df['close'].shift()).abs()
@@ -402,10 +334,8 @@ class AIPatternRecognizer(Strategy):
         if np.isnan(adx_val):
             return {"strength": 0.0, "direction": "NEUTRAL"}
 
-        # Strong trend: ADX > 25
-        # Direction: which DI is higher
         direction = "BULLISH" if plus_di_val > minus_di_val else "BEARISH"
-        strength = min(1.0, adx_val / 50)  # Normalize
+        strength = min(1.0, adx_val / 50)
 
         return {
             "strength": float(strength),
@@ -413,50 +343,29 @@ class AIPatternRecognizer(Strategy):
             "adx": float(adx_val)
         }
 
-    # ==================== AI DECISION ENGINE ====================
-
     def analyze_all_patterns(self, df: pd.DataFrame) -> List[Dict]:
-        """Run all pattern detection methods"""
+        """Run all pattern detection"""
         patterns = []
 
-        # Candlestick patterns
-        hammer = self.detect_hammer(df)
-        if hammer["detected"]:
-            patterns.append(hammer)
+        for detector in [self.detect_hammer, self.detect_engulfing,
+                         self.detect_doji, self.detect_shooting_star]:
+            result = detector(df)
+            if result["detected"]:
+                patterns.append(result)
 
-        engulfing = self.detect_engulfing(df)
-        if engulfing["detected"]:
-            patterns.append(engulfing)
-
-        doji = self.detect_doji(df)
-        if doji["detected"]:
-            patterns.append(doji)
-
-        shooting_star = self.detect_shooting_star(df)
-        if shooting_star["detected"]:
-            patterns.append(shooting_star)
-
-        # Chart patterns
-        double = self.detect_double_top_bottom(df)
-        if double["detected"]:
-            patterns.append(double)
-
-        triangle = self.detect_triangle(df)
-        if triangle["detected"]:
-            patterns.append(triangle)
-
-        head_shoulders = self.detect_head_shoulders(df)
-        if head_shoulders["detected"]:
-            patterns.append(head_shoulders)
+        for detector in [self.detect_double_top_bottom, self.detect_triangle,
+                         self.detect_head_shoulders]:
+            result = detector(df)
+            if result["detected"]:
+                patterns.append(result)
 
         return patterns
 
     def calculate_confidence(self, patterns: List[Dict], momentum: Dict, trend: Dict) -> Dict:
-        """Calculate overall trading confidence and direction"""
+        """Calculate confidence"""
         if not patterns:
             return {"confidence": 0.0, "direction": "NEUTRAL", "score_breakdown": {}}
 
-        # Weight patterns by confidence
         bullish_score = 0.0
         bearish_score = 0.0
 
@@ -467,24 +376,21 @@ class AIPatternRecognizer(Strategy):
             elif pattern["direction"] == "BEARISH":
                 bearish_score += weight
 
-        # Add momentum influence
         if momentum["direction"] == "BULLISH":
             bullish_score += momentum["strength"] * 0.5
         elif momentum["direction"] == "BEARISH":
             bearish_score += momentum["strength"] * 0.5
 
-        # Add trend influence
         if trend["direction"] == "BULLISH":
             bullish_score += trend["strength"] * 0.7
         elif trend["direction"] == "BEARISH":
             bearish_score += trend["strength"] * 0.7
 
-        # Normalize scores
         total_score = bullish_score + bearish_score
         if total_score == 0:
             return {"confidence": 0.0, "direction": "NEUTRAL", "score_breakdown": {}}
 
-        confidence = max(bullish_score, bearish_score) / (total_score + 1)  # +1 to prevent overconfidence
+        confidence = max(bullish_score, bearish_score) / (total_score + 1)
         direction = "BUY" if bullish_score > bearish_score else "SELL"
 
         return {
@@ -499,40 +405,67 @@ class AIPatternRecognizer(Strategy):
 
     def on_bar(self, df: pd.DataFrame) -> Optional[Dict]:
         """
-        Main strategy entry point - analyzes OHLC data and makes trading decisions
+        FIXED: Main strategy entry point with working logging
         """
+        # Log every call
+        safe_log(self.logger, 'info', "=" * 60)
+        safe_log(self.logger, 'info', "AI PATTERN ANALYSIS STARTED")
+        safe_log(self.logger, 'info', f"Analyzing {len(df)} bars")
+
         if len(df) < self.lookback:
-            logger.debug(f"Insufficient data: {len(df)} < {self.lookback}")
+            log_warning(self.logger, f"Insufficient data: {len(df)} < {self.lookback}")
+            safe_log(self.logger, 'info', "=" * 60)
             return None
 
         df = df.copy()
         df['atr'] = self.calculate_atr(df)
 
         if df['atr'].isna().any():
+            log_error(self.logger, "ATR calculation failed (NaN values)")
+            safe_log(self.logger, 'info', "=" * 60)
             return None
 
         # Run all analyses
+        safe_log(self.logger, 'info', "Running pattern detection...")
         patterns = self.analyze_all_patterns(df)
+
+        safe_log(self.logger, 'info', "Analyzing momentum...")
         momentum = self.analyze_momentum(df)
+
+        safe_log(self.logger, 'info', "Detecting trend strength...")
         trend = self.detect_trend_strength(df)
 
         # Calculate trading confidence
         decision = self.calculate_confidence(patterns, momentum, trend)
 
-        logger.info(f"AI Analysis: {len(patterns)} patterns detected")
-        logger.info(f"Momentum: {momentum['direction']} ({momentum['strength']:.2f})")
-        logger.info(f"Trend: {trend['direction']} ({trend['strength']:.2f})")
-        logger.info(f"Decision: {decision['direction']} with {decision['confidence']:.1%} confidence")
+        # ALWAYS log analysis results
+        safe_log(self.logger, 'info', "-" * 60)
+        safe_log(self.logger, 'info', f"[PATTERNS] {len(patterns)} detected: {[p['pattern'] for p in patterns]}")
+        safe_log(self.logger, 'info',
+                 f"[MOMENTUM] {momentum['direction']} (strength: {momentum['strength']:.2f}, RSI: {momentum.get('rsi', 'N/A')})")
+        safe_log(self.logger, 'info',
+                 f"[TREND] {trend['direction']} (strength: {trend['strength']:.2f}, ADX: {trend.get('adx', 'N/A')})")
+        safe_log(self.logger, 'info',
+                 f"[DECISION] {decision['direction']} with {decision['confidence']:.1%} confidence")
+        safe_log(self.logger, 'info',
+                 f"[SCORES] Bullish: {decision['score_breakdown'].get('bullish', 0):.2f} | Bearish: {decision['score_breakdown'].get('bearish', 0):.2f}")
+        safe_log(self.logger, 'info', "-" * 60)
 
-        # Only trade if confidence exceeds threshold
+        # Check confidence threshold
         if decision["confidence"] < self.confidence_threshold:
-            logger.info(f"Confidence {decision['confidence']:.1%} below threshold {self.confidence_threshold:.1%}")
+            log_warning(self.logger,
+                        f"Confidence {decision['confidence']:.1%} BELOW threshold {self.confidence_threshold:.1%} - NO TRADE")
+            safe_log(self.logger, 'info', "=" * 60)
             return None
 
         # Calculate risk parameters
         atr_val = df['atr'].iloc[-1]
         stop_pts = max(atr_val * self.stop_multiplier, 0.5)
         tp_pts = stop_pts * self.rr_take
+
+        log_success(self.logger, f"TRADE SIGNAL GENERATED: {decision['direction']}")
+        safe_log(self.logger, 'info', f"[RISK] Stop: {stop_pts:.2f} pts | TP: {tp_pts:.2f} pts | R:R 1:{self.rr_take}")
+        safe_log(self.logger, 'info', "=" * 60)
 
         return {
             "side": decision["direction"],
