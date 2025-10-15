@@ -1,107 +1,56 @@
-2025-10-15 09:07:11 INFO ig-scalper: ============================================================
-2025-10-15 09:07:11 INFO ig-scalper: Logging initialized (Windows mode - ASCII symbols)
-2025-10-15 09:07:11 INFO ig-scalper: ============================================================
-2025-10-15 09:07:11 INFO ig-scalper: ================================================================================
-2025-10-15 09:07:11 INFO ig-scalper: 🤖 AI-POWERED AUTONOMOUS TRADING SYSTEM
-2025-10-15 09:07:11 INFO ig-scalper: ================================================================================
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Connected to IG API
-2025-10-15 09:07:12 INFO ig-scalper: Initializing multi-source data provider...
-2025-10-15 09:07:12 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:12 INFO data.multi_data_provider: Initializing Smart Data Aggregator
-2025-10-15 09:07:12 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:12 INFO data.multi_data_provider: [OK] Yahoo Finance provider initialized (FREE)
-2025-10-15 09:07:12 INFO data.multi_data_provider: [OK] TwelveData provider initialized
-2025-10-15 09:07:12 INFO data.multi_data_provider: [OK] AlphaVantage provider initialized
-2025-10-15 09:07:12 INFO data.multi_data_provider: [OK] Loaded 5 symbol mappings
-2025-10-15 09:07:12 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Data aggregator ready with 3 providers
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Monitoring 1 instruments
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Timeframe: 3min
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Risk per trade: £1000 (max 5.0% loss)
-2025-10-15 09:07:12 INFO ig-scalper: ✓ AI Pattern Recognizer initialized
-2025-10-15 09:07:12 INFO ig-scalper:   - Confidence threshold: 65.0%
-2025-10-15 09:07:12 INFO ig-scalper:   - Risk/Reward ratio: 1:2.0
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Market details loaded: CS.D.CFEGOLD.CEB.IP
-2025-10-15 09:07:12 INFO ig-scalper: ✓ Starting equity: £28715.41
-2025-10-15 09:07:12 INFO ig-scalper: ================================================================================
-2025-10-15 09:07:12 INFO ig-scalper: 🚀 SYSTEM LIVE - AI analyzing markets autonomously...
-2025-10-15 09:07:12 INFO ig-scalper: ================================================================================
-2025-10-15 09:07:12 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:12 INFO data.multi_data_provider: DATA FETCH REQUEST #1
-2025-10-15 09:07:12 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:07:12 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:12 INFO data.multi_data_provider: [CACHE MISS] Fetching fresh data...
-2025-10-15 09:07:12 INFO data.multi_data_provider: [ATTEMPT] YahooFinance with symbol: GC=F
-2025-10-15 09:07:12 INFO data.multi_data_provider: [YahooFinance] Fetching GC=F (3min) - Request #1
-2025-10-15 09:07:13 INFO data.multi_data_provider: [YahooFinance] SUCCESS: Retrieved 250 bars for GC=F
-2025-10-15 09:07:13 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:13 INFO data.multi_data_provider: [SUCCESS] Data fetched from YahooFinance
-2025-10-15 09:07:13 INFO data.multi_data_provider: Bars retrieved: 250
-2025-10-15 09:07:13 INFO data.multi_data_provider: Date range: 2025-10-14 09:10:00 to 2025-10-15 06:56:39
-2025-10-15 09:07:13 INFO data.multi_data_provider: Latest OHLC: O=4216.50 H=4216.50 L=4216.50 C=4216.50
-2025-10-15 09:07:13 INFO data.multi_data_provider: Volume: 0
-2025-10-15 09:07:13 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:13 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
-2025-10-15 09:07:28 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:28 INFO data.multi_data_provider: DATA FETCH REQUEST #2
-2025-10-15 09:07:28 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:07:28 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:28 INFO data.multi_data_provider: [CACHE HIT] Data age: 15.0s
-2025-10-15 09:07:28 INFO data.multi_data_provider: [CACHE] Source: YahooFinance | Bars: 250
-2025-10-15 09:07:28 INFO data.multi_data_provider: [CACHE] Latest: 2025-10-15 06:56:39 @ 4216.50
-2025-10-15 09:07:43 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:43 INFO data.multi_data_provider: DATA FETCH REQUEST #3
-2025-10-15 09:07:43 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:07:43 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:43 INFO data.multi_data_provider: [CACHE HIT] Data age: 30.0s
-2025-10-15 09:07:43 INFO data.multi_data_provider: [CACHE] Source: YahooFinance | Bars: 250
-2025-10-15 09:07:43 INFO data.multi_data_provider: [CACHE] Latest: 2025-10-15 06:56:39 @ 4216.50
-2025-10-15 09:07:58 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:58 INFO data.multi_data_provider: DATA FETCH REQUEST #4
-2025-10-15 09:07:58 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:07:58 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:07:58 INFO data.multi_data_provider: [CACHE HIT] Data age: 45.0s
-2025-10-15 09:07:58 INFO data.multi_data_provider: [CACHE] Source: YahooFinance | Bars: 250
-2025-10-15 09:07:58 INFO data.multi_data_provider: [CACHE] Latest: 2025-10-15 06:56:39 @ 4216.50
-2025-10-15 09:08:13 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:13 INFO data.multi_data_provider: DATA FETCH REQUEST #5
-2025-10-15 09:08:13 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:08:13 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:13 INFO data.multi_data_provider: [CACHE MISS] Fetching fresh data...
-2025-10-15 09:08:13 INFO data.multi_data_provider: [ATTEMPT] YahooFinance with symbol: GC=F
-2025-10-15 09:08:13 INFO data.multi_data_provider: [YahooFinance] Fetching GC=F (3min) - Request #2
-2025-10-15 09:08:14 INFO data.multi_data_provider: [YahooFinance] SUCCESS: Retrieved 250 bars for GC=F
-2025-10-15 09:08:14 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:14 INFO data.multi_data_provider: [SUCCESS] Data fetched from YahooFinance
-2025-10-15 09:08:14 INFO data.multi_data_provider: Bars retrieved: 250
-2025-10-15 09:08:14 INFO data.multi_data_provider: Date range: 2025-10-14 09:10:00 to 2025-10-15 06:57:41
-2025-10-15 09:08:14 INFO data.multi_data_provider: Latest OHLC: O=4217.20 H=4217.20 L=4217.20 C=4217.20
-2025-10-15 09:08:14 INFO data.multi_data_provider: Volume: 0
-2025-10-15 09:08:14 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:14 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
-2025-10-15 09:08:29 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:29 INFO data.multi_data_provider: DATA FETCH REQUEST #6
-2025-10-15 09:08:29 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:08:29 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:29 INFO data.multi_data_provider: [CACHE HIT] Data age: 15.0s
-2025-10-15 09:08:29 INFO data.multi_data_provider: [CACHE] Source: YahooFinance | Bars: 250
-2025-10-15 09:08:29 INFO data.multi_data_provider: [CACHE] Latest: 2025-10-15 06:57:41 @ 4217.20
-2025-10-15 09:08:44 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:44 INFO data.multi_data_provider: DATA FETCH REQUEST #7
-2025-10-15 09:08:44 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
-2025-10-15 09:08:44 INFO data.multi_data_provider: ================================================================================
-2025-10-15 09:08:44 INFO data.multi_data_provider: [CACHE HIT] Data age: 30.1s
-2025-10-15 09:08:44 INFO data.multi_data_provider: [CACHE] Source: YahooFinance | Bars: 250
-2025-10-15 09:08:44 INFO data.multi_data_provider: [CACHE] Latest: 2025-10-15 06:57:41 @ 4217.20
-2025-10-15 09:08:52 INFO ig-scalper: ⚠️ Interrupted by user
-2025-10-15 09:08:52 INFO ig-scalper: ================================================================================
-2025-10-15 09:08:52 INFO ig-scalper: 🛑 SHUTTING DOWN - Generating final report...
-2025-10-15 09:08:52 INFO ig-scalper: ================================================================================
-2025-10-15 09:08:52 INFO ig-scalper: 📊 FINAL STATISTICS:
-2025-10-15 09:08:52 INFO ig-scalper:    Total Trades: 0
-2025-10-15 09:08:52 INFO ig-scalper:    Win Rate: 0.0%
-2025-10-15 09:08:52 INFO ig-scalper:    Wins: 0 | Losses: 0
-2025-10-15 09:08:52 INFO ig-scalper:    Total P&L: +0.00 pts
-2025-10-15 09:08:52 INFO ig-scalper:    Profit Factor: 0.00
-2025-10-15 09:08:52 INFO ig-scalper: 📄 Final report: data\final_ai_report.json
-2025-10-15 09:08:52 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:34 INFO ig-scalper: ============================================================
+2025-10-15 09:57:34 INFO ig-scalper: Logging initialized (Windows mode - ASCII symbols)
+2025-10-15 09:57:34 INFO ig-scalper: ============================================================
+2025-10-15 09:57:34 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:34 INFO ig-scalper: 🤖 AI-POWERED AUTONOMOUS TRADING SYSTEM
+2025-10-15 09:57:34 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:34 INFO ig-scalper: ✓ Connected to IG API
+2025-10-15 09:57:34 INFO ig-scalper: Initializing multi-source data provider...
+2025-10-15 09:57:34 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:34 INFO data.multi_data_provider: Initializing Smart Data Aggregator
+2025-10-15 09:57:34 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:34 INFO data.multi_data_provider: [OK] Yahoo Finance provider initialized (FREE)
+2025-10-15 09:57:34 INFO data.multi_data_provider: [OK] TwelveData provider initialized
+2025-10-15 09:57:34 INFO data.multi_data_provider: [OK] AlphaVantage provider initialized
+2025-10-15 09:57:34 INFO data.multi_data_provider: [OK] Loaded 5 symbol mappings
+2025-10-15 09:57:34 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:34 INFO ig-scalper: ✓ Data aggregator ready with 3 providers
+2025-10-15 09:57:34 INFO ig-scalper: ✓ Monitoring 1 instruments
+2025-10-15 09:57:34 INFO ig-scalper: ✓ Timeframe: 3min
+2025-10-15 09:57:34 INFO ig-scalper: ✓ Risk per trade: £1000 (max 5.0% loss)
+2025-10-15 09:57:34 INFO ig-scalper: ✓ AI Pattern Recognizer initialized
+2025-10-15 09:57:34 INFO ig-scalper:   - Confidence threshold: 65.0%
+2025-10-15 09:57:34 INFO ig-scalper:   - Risk/Reward ratio: 1:2.0
+2025-10-15 09:57:35 INFO ig-scalper: ✓ Market details loaded: CS.D.CFEGOLD.CEB.IP
+2025-10-15 09:57:35 INFO ig-scalper: ✓ Starting equity: £28715.41
+2025-10-15 09:57:35 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:35 INFO ig-scalper: 🚀 SYSTEM LIVE - AI analyzing markets autonomously...
+2025-10-15 09:57:35 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:35 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:35 INFO data.multi_data_provider: DATA FETCH REQUEST #1
+2025-10-15 09:57:35 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 3min | Limit: 250
+2025-10-15 09:57:35 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:35 INFO data.multi_data_provider: [CACHE MISS] Fetching fresh data...
+2025-10-15 09:57:35 INFO data.multi_data_provider: [ATTEMPT] YahooFinance with symbol: GC=F
+2025-10-15 09:57:35 INFO data.multi_data_provider: [YahooFinance] Fetching GC=F (3min) - Request #1
+2025-10-15 09:57:35 INFO data.multi_data_provider: [YahooFinance] SUCCESS: Retrieved 250 bars for GC=F
+2025-10-15 09:57:35 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:35 INFO data.multi_data_provider: [SUCCESS] Data fetched from YahooFinance
+2025-10-15 09:57:35 INFO data.multi_data_provider: Bars retrieved: 250
+2025-10-15 09:57:35 INFO data.multi_data_provider: Date range: 2025-10-14 10:00:00 to 2025-10-15 07:47:00
+2025-10-15 09:57:35 INFO data.multi_data_provider: Latest OHLC: O=4223.80 H=4223.80 L=4223.80 C=4223.80
+2025-10-15 09:57:35 INFO data.multi_data_provider: Volume: 0
+2025-10-15 09:57:35 INFO data.multi_data_provider: ================================================================================
+2025-10-15 09:57:35 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 09:57:43 INFO ig-scalper: ⚠️ Interrupted by user
+2025-10-15 09:57:43 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:43 INFO ig-scalper: 🛑 SHUTTING DOWN - Generating final report...
+2025-10-15 09:57:43 INFO ig-scalper: ================================================================================
+2025-10-15 09:57:43 INFO ig-scalper: 📊 FINAL STATISTICS:
+2025-10-15 09:57:43 INFO ig-scalper:    Total Trades: 0
+2025-10-15 09:57:43 INFO ig-scalper:    Win Rate: 0.0%
+2025-10-15 09:57:43 INFO ig-scalper:    Wins: 0 | Losses: 0
+2025-10-15 09:57:43 INFO ig-scalper:    Total P&L: +0.00 pts
+2025-10-15 09:57:43 INFO ig-scalper:    Profit Factor: 0.00
+2025-10-15 09:57:43 INFO ig-scalper: 📄 Final report: data\final_ai_report.json
+2025-10-15 09:57:43 INFO ig-scalper: ================================================================================
