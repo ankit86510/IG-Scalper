@@ -1,0 +1,39 @@
+{
+  "generated_at": "2025-10-15T06:34:25.447358",
+  "performance": {
+    "total_trades": 0
+  },
+  "recent_trades": [],
+  "decision_log": [
+    {
+      "timestamp": "2025-10-15T06:29:20.079016",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": false,
+      "confidence": 0.0
+    },
+    {
+      "timestamp": "2025-10-15T06:30:53.613768",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": false,
+      "confidence": 0.0
+    },
+    {
+      "timestamp": "2025-10-15T06:31:54.425678",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": false,
+      "confidence": 0.0
+    },
+    {
+      "timestamp": "2025-10-15T06:32:54.986776",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": false,
+      "confidence": 0.0
+    },
+    {
+      "timestamp": "2025-10-15T06:33:55.439567",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": false,
+      "confidence": 0.0
+    }
+  ]
+}

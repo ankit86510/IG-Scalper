@@ -1,0 +1,84 @@
+2025-10-15 08:29:18 INFO ig-scalper: ============================================================
+2025-10-15 08:29:18 INFO ig-scalper: Logging initialized (Windows mode - ASCII symbols)
+2025-10-15 08:29:18 INFO ig-scalper: ============================================================
+2025-10-15 08:29:18 INFO ig-scalper: ================================================================================
+2025-10-15 08:29:18 INFO ig-scalper: 🤖 AI-POWERED AUTONOMOUS TRADING SYSTEM
+2025-10-15 08:29:18 INFO ig-scalper: ================================================================================
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Connected to IG API
+2025-10-15 08:29:18 INFO ig-scalper: Initializing multi-source data provider...
+2025-10-15 08:29:18 INFO data.multi_data_provider: ✓ Yahoo Finance provider initialized (FREE)
+2025-10-15 08:29:18 INFO data.multi_data_provider: ✓ TwelveData provider initialized
+2025-10-15 08:29:18 INFO data.multi_data_provider: ✓ AlphaVantage provider initialized
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Data aggregator ready with 3 providers
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Monitoring 1 instruments
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Timeframe: 3min
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Risk per trade: £1000 (max 5.0% loss)
+2025-10-15 08:29:18 INFO ig-scalper: ✓ AI Pattern Recognizer initialized
+2025-10-15 08:29:18 INFO ig-scalper:   - Confidence threshold: 65.0%
+2025-10-15 08:29:18 INFO ig-scalper:   - Risk/Reward ratio: 1:2.0
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Market details loaded: CS.D.CFEGOLD.CEB.IP
+2025-10-15 08:29:18 INFO ig-scalper: ✓ Starting equity: £28715.41
+2025-10-15 08:29:18 INFO ig-scalper: ================================================================================
+2025-10-15 08:29:18 INFO ig-scalper: 🚀 SYSTEM LIVE - AI analyzing markets autonomously...
+2025-10-15 08:29:18 INFO ig-scalper: ================================================================================
+2025-10-15 08:29:18 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:29:20 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:29:20 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:30:20 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:30:32 ERROR data.multi_data_provider: Yahoo Finance error: HTTPSConnectionPool(host='query1.finance.yahoo.com', port=443): Max retries exceeded with url: /v8/finance/chart/GC=F?interval=5m&range=5d (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x000001A39CEBFAA0>: Failed to resolve 'query1.finance.yahoo.com' ([Errno 11001] getaddrinfo failed)"))
+2025-10-15 08:30:32 WARNING data.multi_data_provider: ✗ YahooFinance returned insufficient data
+2025-10-15 08:30:32 INFO data.multi_data_provider: Trying TwelveData for CS.D.CFEGOLD.CEB.IP (symbol: XAU/USD)
+2025-10-15 08:30:34 ERROR data.multi_data_provider: TwelveData error: HTTPSConnectionPool(host='api.twelvedata.com', port=443): Max retries exceeded with url: /time_series?symbol=XAU%2FUSD&interval=3min&outputsize=250&apikey=76610ad31cba4d4cad0d7cf42a92bec0 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x000001A39CEDCC80>: Failed to establish a new connection: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions'))
+2025-10-15 08:30:34 WARNING data.multi_data_provider: ✗ TwelveData returned insufficient data
+2025-10-15 08:30:34 INFO data.multi_data_provider: Trying AlphaVantage for CS.D.CFEGOLD.CEB.IP (symbol: XAUUSD)
+2025-10-15 08:30:35 ERROR data.multi_data_provider: AlphaVantage error: HTTPSConnectionPool(host='www.alphavantage.co', port=443): Max retries exceeded with url: /query?function=TIME_SERIES_INTRADAY&symbol=XAUUSD&interval=5min&apikey=G3ABNGRH30SRVP0S&outputsize=full (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x000001A39CEDD880>: Failed to establish a new connection: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions'))
+2025-10-15 08:30:35 WARNING data.multi_data_provider: ✗ AlphaVantage returned insufficient data
+2025-10-15 08:30:35 WARNING data.multi_data_provider: All external providers failed, falling back to IG for CS.D.CFEGOLD.CEB.IP
+2025-10-15 08:30:35 ERROR data.multi_data_provider: IG fallback also failed: HTTPSConnectionPool(host='demo-api.ig.com', port=443): Max retries exceeded with url: /gateway/deal/prices/CS.D.CFEGOLD.CEB.IP?resolution=MINUTE_3&max=250 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x000001A39AF9DD30>: Failed to establish a new connection: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions'))
+2025-10-15 08:30:35 ERROR data.multi_data_provider: All data sources failed for CS.D.CFEGOLD.CEB.IP
+2025-10-15 08:30:50 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:30:53 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:30:53 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:31:54 INFO ig-scalper: 💰 Daily P&L: +0.00% | Equity: £28715.41
+2025-10-15 08:31:54 INFO ig-scalper: Synced 0 positions from broker
+2025-10-15 08:31:54 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:31:54 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:31:54 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:32:54 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:32:54 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:32:54 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:33:54 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:33:55 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:33:55 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:34:25 INFO ig-scalper: ================================================================================
+2025-10-15 08:34:25 INFO ig-scalper: 📊 PERFORMANCE UPDATE
+2025-10-15 08:34:25 INFO ig-scalper:   Trades: 0 | Win Rate: 0.0%
+2025-10-15 08:34:25 INFO ig-scalper:   Total P&L: +0.00 pts
+2025-10-15 08:34:25 INFO ig-scalper:   Open Positions: 0
+2025-10-15 08:34:25 INFO ig-scalper: ================================================================================
+2025-10-15 08:34:25 INFO ig-scalper: 📄 Report saved: data\ai_analysis_report.json
+2025-10-15 08:34:26 INFO ig-scalper: 💰 Daily P&L: +0.00% | Equity: £28715.41
+2025-10-15 08:34:26 INFO ig-scalper: Synced 0 positions from broker
+2025-10-15 08:34:56 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:34:57 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:34:57 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:35:57 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:35:58 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:35:58 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:36:58 INFO ig-scalper: 💰 Daily P&L: +0.00% | Equity: £28715.41
+2025-10-15 08:36:58 INFO ig-scalper: Synced 0 positions from broker
+2025-10-15 08:36:58 INFO data.multi_data_provider: Trying YahooFinance for CS.D.CFEGOLD.CEB.IP (symbol: GC=F)
+2025-10-15 08:36:59 INFO data.multi_data_provider: ✓ Success! Got 250 bars from YahooFinance
+2025-10-15 08:36:59 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-15 08:37:24 INFO ig-scalper: ⚠️ Interrupted by user
+2025-10-15 08:37:24 INFO ig-scalper: ================================================================================
+2025-10-15 08:37:24 INFO ig-scalper: 🛑 SHUTTING DOWN - Generating final report...
+2025-10-15 08:37:24 INFO ig-scalper: ================================================================================
+2025-10-15 08:37:24 INFO ig-scalper: 📊 FINAL STATISTICS:
+2025-10-15 08:37:24 INFO ig-scalper:    Total Trades: 0
+2025-10-15 08:37:24 INFO ig-scalper:    Win Rate: 0.0%
+2025-10-15 08:37:24 INFO ig-scalper:    Wins: 0 | Losses: 0
+2025-10-15 08:37:24 INFO ig-scalper:    Total P&L: +0.00 pts
+2025-10-15 08:37:24 INFO ig-scalper:    Profit Factor: 0.00
+2025-10-15 08:37:24 INFO ig-scalper: 📄 Final report: data\final_ai_report.json
+2025-10-15 08:37:24 INFO ig-scalper: ================================================================================
