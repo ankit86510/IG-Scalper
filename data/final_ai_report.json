@@ -1,54 +1,18 @@
 {
-  "generated_at": "2025-10-15T06:37:24.431932",
+  "generated_at": "2025-10-15T07:08:52.129828",
   "performance": {
     "total_trades": 0
   },
   "recent_trades": [],
   "decision_log": [
     {
-      "timestamp": "2025-10-15T06:29:20.079016",
+      "timestamp": "2025-10-15T07:07:13.818185",
       "epic": "CS.D.CFEGOLD.CEB.IP",
       "signal": false,
       "confidence": 0.0
     },
     {
-      "timestamp": "2025-10-15T06:30:53.613768",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
-    },
-    {
-      "timestamp": "2025-10-15T06:31:54.425678",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
-    },
-    {
-      "timestamp": "2025-10-15T06:32:54.986776",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
-    },
-    {
-      "timestamp": "2025-10-15T06:33:55.439567",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
-    },
-    {
-      "timestamp": "2025-10-15T06:34:57.188649",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
-    },
-    {
-      "timestamp": "2025-10-15T06:35:58.073374",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
-    },
-    {
-      "timestamp": "2025-10-15T06:36:59.116721",
+      "timestamp": "2025-10-15T07:08:14.085794",
       "epic": "CS.D.CFEGOLD.CEB.IP",
       "signal": false,
       "confidence": 0.0
