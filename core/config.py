@@ -1,7 +1,7 @@
 import os
 import yaml
 
-def load_settings(path="config/settings.yaml"):
+def load_settings(path="config/settings_ai.yaml"):
     with open(path, "r") as f:
         cfg = yaml.safe_load(f)
     # Expand env placeholders like ${VAR}

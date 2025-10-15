@@ -1,0 +1,105 @@
+env: "paper"    # paper or live
+timeframes:
+  primary: "3min"
+  confirm: "5min"
+  trend: "15min"
+
+ig:
+  api_key: "177ab268b24734a7e44bf4d6ffff69fabe9a2ebf"
+  username: "provaig123"
+  password: "Demoqaz1!"
+  account_type: "DEMO"   # DEMO or LIVE
+
+alphavantage:
+  api_key: "G3ABNGRH30SRVP0S"
+
+12data:
+  api_key: "76610ad31cba4d4cad0d7cf42a92bec0"
+
+risk:
+  account_equity: 10000
+  invest_per_trade: 1000
+  max_loss_pct_invest: 5.0  # Max 5% of invested capital per trade
+  max_daily_loss_pct: 3.0   # Stop trading if down 3% on the day
+  max_losing_trades: 3      # Stop after 3 consecutive losses
+
+execution:
+  time_in_force: "FILL_OR_KILL"
+  use_trailing_stop: true   # Enable dynamic trailing stops
+
+# AI Strategy Configuration
+ai_strategy:
+  # Pattern recognition settings
+  confidence_threshold: 0.65   # Minimum confidence to take a trade (0-1)
+  lookback_candles: 50         # Number of candles to analyze
+
+  # Risk management
+  atr_period: 14               # ATR period for volatility measurement
+  stop_multiplier: 1.5         # Stop loss = ATR * multiplier
+  rr_take: 2.0                 # Risk/Reward ratio (1:2 means 2x profit target)
+
+  # Pattern weights (future enhancement)
+  pattern_weights:
+    candlestick: 1.0
+    chart_pattern: 1.2
+    momentum: 0.8
+    trend: 1.5
+
+  # Advanced features
+  enable_pattern_confluence: true    # Require multiple patterns
+  min_patterns_for_trade: 2          # Minimum patterns needed
+  use_sentiment_analysis: false      # Reserved for future ML integration
+
+# Data Source Priority
+# System will try sources in this order
+data_sources:
+  # Primary (FREE)
+  yahoo_finance:
+    enabled: true
+    priority: 1
+
+  # Secondary (FREE tier available)
+  twelve_data:
+    enabled: true
+    api_key: "${TWELVE_DATA_KEY}"
+    priority: 2
+
+  # Last resort
+  alpha_vantage:
+    enabled: false
+    api_key: "${ALPHA_VANTAGE_KEY}"
+    priority: 3
+
+  # Fallback to IG
+  ig_api:
+    enabled: true
+    priority: 4
+
+# Instruments to trade
+symbols:
+  # Major Forex Pairs - Highly liquid
+  # - "CS.D.EURUSD.CFD.IP"   # EUR/USD
+  # - "CS.D.GBPUSD.CFD.IP"   # GBP/USD
+
+  # Indices - Good for trending
+  # - "IX.D.SPTRD.DAILY.IP"  # S&P 500
+  # - "IX.D.FTSE.CFD.IP"     # FTSE 100
+
+  # Commodities
+  - "CS.D.CFEGOLD.CEB.IP"  # Gold
+  # - "CMD.USCrude.CFD.IP"   # Crude Oil
+
+logging:
+  level: "INFO"  # DEBUG for detailed analysis, INFO for normal operation
+  sink: "logs/ai_bot.log"
+
+# Database for storing analysis results
+db:
+  url: "sqlite:///data/ai_trading.db"
+
+# Performance tracking
+analytics:
+  save_all_decisions: true      # Log every AI decision
+  generate_reports: true        # Auto-generate performance reports
+  report_interval_minutes: 5    # How often to generate reports
+  save_pattern_history: true    # Store detected patterns for learning
