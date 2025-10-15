@@ -298,6 +298,7 @@ class SmartDataAggregator:
         # Initialize providers based on config
         self.providers = []
 
+
         # Yahoo Finance (FREE - always available)
         self.providers.append(("YahooFinance", YahooFinanceProvider()))
         logger.info("✓ Yahoo Finance provider initialized (FREE)")
