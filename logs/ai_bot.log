@@ -2940,3 +2940,348 @@ requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://de
 2025-10-21 08:35:13 INFO data.multi_data_provider: ================================================================================
 2025-10-21 08:35:13 INFO data.multi_data_provider: [CACHE HIT] Data age: 15.2s | Source: YahooFinance
 2025-10-21 08:35:13 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4279.50
+2025-10-21 14:03:13 INFO ig-scalper: ============================================================
+2025-10-21 14:03:13 INFO ig-scalper: Logging initialized (Windows mode - ASCII symbols)
+2025-10-21 14:03:13 INFO ig-scalper: ============================================================
+2025-10-21 14:03:13 INFO ig-scalper: ================================================================================
+2025-10-21 14:03:13 INFO ig-scalper: 🤖 AI-POWERED AUTONOMOUS TRADING SYSTEM
+2025-10-21 14:03:13 INFO ig-scalper: ================================================================================
+2025-10-21 14:03:13 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): demo-api.ig.com:443
+2025-10-21 14:03:13 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/session HTTP/1.1" 200 613
+2025-10-21 14:03:13 INFO ig-scalper: ✓ Connected to IG API
+2025-10-21 14:03:13 INFO ig-scalper: Initializing multi-source data provider...
+2025-10-21 14:03:13 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:13 INFO data.multi_data_provider: Initializing Smart Data Aggregator
+2025-10-21 14:03:13 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:13 INFO data.multi_data_provider: [OK] Yahoo Finance provider initialized (FREE)
+2025-10-21 14:03:13 INFO data.multi_data_provider: [OK] TwelveData provider initialized
+2025-10-21 14:03:13 INFO data.multi_data_provider: [OK] AlphaVantage provider initialized
+2025-10-21 14:03:13 INFO data.multi_data_provider: Loaded 4 symbol mappings
+2025-10-21 14:03:13 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:13 INFO ig-scalper: ✓ Data aggregator ready with 3 providers
+2025-10-21 14:03:13 INFO ig-scalper: ✓ Monitoring 1 instruments
+2025-10-21 14:03:13 INFO ig-scalper: ✓ Timeframe: 1min
+2025-10-21 14:03:13 INFO ig-scalper: ✓ Risk per trade: £1000 (max 5.0% loss)
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ================================================================================
+2025-10-21 14:03:15 INFO AIPatternRecognizer: AI Pattern Recognizer - CFD OPTIMIZED
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ================================================================================
+2025-10-21 14:03:15 INFO AIPatternRecognizer: CFD Mode: ENABLED
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Confidence threshold: 30.0%
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Min movement: 0.50%
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Pattern sensitivity: 1.3x
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ================================================================================
+2025-10-21 14:03:15 INFO ig-scalper: ✓ AI Pattern Recognizer initialized
+2025-10-21 14:03:15 INFO ig-scalper:   - Confidence threshold: 30.0%
+2025-10-21 14:03:15 INFO ig-scalper:   - Risk/Reward ratio: 1:2.0
+2025-10-21 14:03:15 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/markets/CS.D.CFEGOLD.CEB.IP HTTP/1.1" 200 1814
+2025-10-21 14:03:15 INFO ig-scalper: ✓ Market details loaded: CS.D.CFEGOLD.CEB.IP
+2025-10-21 14:03:15 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
+2025-10-21 14:03:15 INFO ig-scalper: ✓ Starting equity: £28715.41
+2025-10-21 14:03:15 INFO ig-scalper: ================================================================================
+2025-10-21 14:03:15 INFO ig-scalper: 🚀 SYSTEM LIVE - AI analyzing markets autonomously...
+2025-10-21 14:03:15 INFO ig-scalper: ================================================================================
+2025-10-21 14:03:15 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:15 INFO data.multi_data_provider: DATA FETCH REQUEST #1
+2025-10-21 14:03:15 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:03:15 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:15 INFO data.multi_data_provider: [CACHE MISS] Fetching fresh data...
+2025-10-21 14:03:15 INFO data.multi_data_provider: [ATTEMPT] YahooFinance with symbol: GC=F
+2025-10-21 14:03:15 INFO data.multi_data_provider: [YahooFinance] Fetching GC=F (1min) - Request #1
+2025-10-21 14:03:15 DEBUG urllib3.connectionpool: Starting new HTTPS connection (1): query1.finance.yahoo.com:443
+2025-10-21 14:03:15 DEBUG urllib3.connectionpool: https://query1.finance.yahoo.com:443 "GET /v8/finance/chart/GC=F?interval=1m&range=1d HTTP/1.1" 200 None
+2025-10-21 14:03:15 DEBUG data.multi_data_provider: [YahooFinance] Request completed in 0.21s
+2025-10-21 14:03:15 DEBUG data.multi_data_provider: [YahooFinance] Skipped 20 incomplete bars
+2025-10-21 14:03:15 INFO data.multi_data_provider: [OK] YahooFinance: Retrieved 250 bars for GC=F
+2025-10-21 14:03:15 DEBUG data.multi_data_provider: [YahooFinance] Current price: 4269.60
+2025-10-21 14:03:15 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:15 INFO data.multi_data_provider: [DATA RECEIVED] YahooFinance: 250 bars
+2025-10-21 14:03:15 INFO data.multi_data_provider: [TIME RANGE] 2025-10-21 07:27:00 to 2025-10-21 11:53:15
+2025-10-21 14:03:15 INFO data.multi_data_provider: --------------------------------------------------------------------------------
+2025-10-21 14:03:15 INFO data.multi_data_provider: [FIRST 3 BARS]
+2025-10-21 14:03:15 INFO data.multi_data_provider:   2025-10-21 07:27:00: O=4344.3999 H=4344.3999 L=4340.7002 C=4340.7002 V=142.0
+2025-10-21 14:03:15 INFO data.multi_data_provider:   2025-10-21 07:28:00: O=4341.2002 H=4343.0000 L=4337.6001 C=4342.1001 V=434.0
+2025-10-21 14:03:15 INFO data.multi_data_provider:   2025-10-21 07:29:00: O=4342.2998 H=4343.1001 L=4340.2002 C=4340.6001 V=214.0
+2025-10-21 14:03:15 INFO data.multi_data_provider: [LAST 3 BARS]
+2025-10-21 14:03:15 INFO data.multi_data_provider:   2025-10-21 11:52:00: O=4268.3999 H=4269.8999 L=4264.7002 C=4269.1001 V=474.0
+2025-10-21 14:03:15 INFO data.multi_data_provider:   2025-10-21 11:53:00: O=4268.7002 H=4270.2998 L=4268.2002 C=4269.6001 V=0.0
+2025-10-21 14:03:15 INFO data.multi_data_provider:   2025-10-21 11:53:15: O=4269.6001 H=4269.6001 L=4269.6001 C=4269.6001 V=0.0
+2025-10-21 14:03:15 INFO data.multi_data_provider: --------------------------------------------------------------------------------
+2025-10-21 14:03:15 INFO data.multi_data_provider: [PRICE STATISTICS]
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Close Min: 4258.6001
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Close Max: 4342.1001
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Close Mean: 4282.4776
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Close Std: 14.5297
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Flat bars (last 10): 1/10
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Price movement: 2.024522%
+2025-10-21 14:03:15 INFO data.multi_data_provider:   Unique close prices: 170/250
+2025-10-21 14:03:15 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:15 INFO data.multi_data_provider: [OK] Data accepted from YahooFinance: 250 bars
+2025-10-21 14:03:15 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ============================================================
+2025-10-21 14:03:15 INFO AIPatternRecognizer: AI ANALYSIS - 2025-10-21 14:03:15 CEST
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Analyzing 250 bars
+2025-10-21 14:03:15 DEBUG AIPatternRecognizer: Flat bars (last 10 complete): 0/10
+2025-10-21 14:03:15 DEBUG AIPatternRecognizer: Unique prices: 170/249
+2025-10-21 14:03:15 DEBUG AIPatternRecognizer: Price range: 86.699707 (2.024498%)
+2025-10-21 14:03:15 DEBUG AIPatternRecognizer: ATR: 3.578509 (0.0836% of price)
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Running pattern detection...
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Analyzing momentum...
+2025-10-21 14:03:15 INFO AIPatternRecognizer: Detecting trend strength...
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ------------------------------------------------------------
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [PATTERNS] 0 detected: []
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [MOMENTUM] BEARISH (strength: 0.18, RSI: 36.23902526428955)
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [TREND] BEARISH (strength: 0.84, ADX: 33.72025807200492)
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [DECISION] SELL with 48.1% confidence
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [SCORES] Bullish: 0.00 | Bearish: 0.78
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ------------------------------------------------------------
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [OK] ✓ TRADE SIGNAL: SELL
+2025-10-21 14:03:15 INFO AIPatternRecognizer: [RISK] Stop: 5.37 pts | TP: 10.74 pts | R:R 1:2.0
+2025-10-21 14:03:15 INFO AIPatternRecognizer: ============================================================
+2025-10-21 14:03:15 INFO ig-scalper: ============================================================
+2025-10-21 14:03:15 INFO ig-scalper: 🎯 AI SIGNAL DETECTED: CS.D.CFEGOLD.CEB.IP
+2025-10-21 14:03:15 INFO ig-scalper:    Direction: SELL
+2025-10-21 14:03:15 INFO ig-scalper:    Confidence: 48.1%
+2025-10-21 14:03:15 INFO ig-scalper:    Patterns: 
+2025-10-21 14:03:15 INFO ig-scalper:    Momentum: BEARISH
+2025-10-21 14:03:15 INFO ig-scalper:    Trend Strength: 0.84
+2025-10-21 14:03:15 INFO ig-scalper: ============================================================
+2025-10-21 14:03:15 INFO ig-scalper: 📤 PLACING ORDER:
+2025-10-21 14:03:15 INFO ig-scalper:    CS.D.CFEGOLD.CEB.IP SELL
+2025-10-21 14:03:15 INFO ig-scalper:    Size: 9.3
+2025-10-21 14:03:15 INFO ig-scalper:    Stop: 5.37 pts
+2025-10-21 14:03:15 INFO ig-scalper:    Target: 10.74 pts
+2025-10-21 14:03:15 INFO ig-scalper:    Risk/Reward: 1:2.00
+2025-10-21 14:03:15 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/positions/otc HTTP/1.1" 400 64
+2025-10-21 14:03:15 ERROR ig-scalper: ❌ ORDER FAILED CS.D.CFEGOLD.CEB.IP: 400 Client Error: Bad Request for url: https://demo-api.ig.com/gateway/deal/positions/otc
+Traceback (most recent call last):
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\runners\run_ai_autonomous.py", line 460, in main
+    resp = ig.place_order(
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\broker\ig_client.py", line 92, in place_order
+    r.raise_for_status(); return r.json()
+    ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\.venv\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://demo-api.ig.com/gateway/deal/positions/otc
+2025-10-21 14:03:31 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:31 INFO data.multi_data_provider: DATA FETCH REQUEST #2
+2025-10-21 14:03:31 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:03:31 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:31 INFO data.multi_data_provider: [CACHE HIT] Data age: 15.1s | Source: YahooFinance
+2025-10-21 14:03:31 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4269.60
+2025-10-21 14:03:46 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:46 INFO data.multi_data_provider: DATA FETCH REQUEST #3
+2025-10-21 14:03:46 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:03:46 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:03:46 INFO data.multi_data_provider: [CACHE HIT] Data age: 30.1s | Source: YahooFinance
+2025-10-21 14:03:46 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4269.60
+2025-10-21 14:04:01 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:01 INFO data.multi_data_provider: DATA FETCH REQUEST #4
+2025-10-21 14:04:01 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:04:01 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:01 INFO data.multi_data_provider: [CACHE HIT] Data age: 45.1s | Source: YahooFinance
+2025-10-21 14:04:01 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4269.60
+2025-10-21 14:04:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:16 INFO data.multi_data_provider: DATA FETCH REQUEST #5
+2025-10-21 14:04:16 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:04:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:16 INFO data.multi_data_provider: [CACHE MISS] Fetching fresh data...
+2025-10-21 14:04:16 INFO data.multi_data_provider: [ATTEMPT] YahooFinance with symbol: GC=F
+2025-10-21 14:04:16 INFO data.multi_data_provider: [YahooFinance] Fetching GC=F (1min) - Request #2
+2025-10-21 14:04:16 DEBUG urllib3.connectionpool: https://query1.finance.yahoo.com:443 "GET /v8/finance/chart/GC=F?interval=1m&range=1d HTTP/1.1" 200 None
+2025-10-21 14:04:16 DEBUG data.multi_data_provider: [YahooFinance] Request completed in 0.14s
+2025-10-21 14:04:16 DEBUG data.multi_data_provider: [YahooFinance] Skipped 20 incomplete bars
+2025-10-21 14:04:16 INFO data.multi_data_provider: [OK] YahooFinance: Retrieved 250 bars for GC=F
+2025-10-21 14:04:16 DEBUG data.multi_data_provider: [YahooFinance] Current price: 4268.60
+2025-10-21 14:04:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:16 INFO data.multi_data_provider: [DATA RECEIVED] YahooFinance: 250 bars
+2025-10-21 14:04:16 INFO data.multi_data_provider: [TIME RANGE] 2025-10-21 07:28:00 to 2025-10-21 11:54:13
+2025-10-21 14:04:16 INFO data.multi_data_provider: --------------------------------------------------------------------------------
+2025-10-21 14:04:16 INFO data.multi_data_provider: [FIRST 3 BARS]
+2025-10-21 14:04:16 INFO data.multi_data_provider:   2025-10-21 07:28:00: O=4341.2002 H=4343.0000 L=4337.6001 C=4342.1001 V=434.0
+2025-10-21 14:04:16 INFO data.multi_data_provider:   2025-10-21 07:29:00: O=4342.2998 H=4343.1001 L=4340.2002 C=4340.6001 V=214.0
+2025-10-21 14:04:16 INFO data.multi_data_provider:   2025-10-21 07:30:00: O=4340.2002 H=4340.2002 L=4339.5000 C=4340.0000 V=28.0
+2025-10-21 14:04:16 INFO data.multi_data_provider: [LAST 3 BARS]
+2025-10-21 14:04:16 INFO data.multi_data_provider:   2025-10-21 11:53:00: O=4268.7002 H=4270.2998 L=4268.2002 C=4269.6001 V=132.0
+2025-10-21 14:04:16 INFO data.multi_data_provider:   2025-10-21 11:54:00: O=4269.7002 H=4269.7002 L=4265.7998 C=4266.6001 V=0.0
+2025-10-21 14:04:16 INFO data.multi_data_provider:   2025-10-21 11:54:13: O=4268.6001 H=4268.6001 L=4268.6001 C=4268.6001 V=0.0
+2025-10-21 14:04:16 INFO data.multi_data_provider: --------------------------------------------------------------------------------
+2025-10-21 14:04:16 INFO data.multi_data_provider: [PRICE STATISTICS]
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Close Min: 4258.6001
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Close Max: 4342.1001
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Close Mean: 4282.1772
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Close Std: 14.0900
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Flat bars (last 10): 1/10
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Price movement: 1.994310%
+2025-10-21 14:04:16 INFO data.multi_data_provider:   Unique close prices: 171/250
+2025-10-21 14:04:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:16 INFO data.multi_data_provider: [OK] Data accepted from YahooFinance: 250 bars
+2025-10-21 14:04:16 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-21 14:04:16 INFO AIPatternRecognizer: ============================================================
+2025-10-21 14:04:16 INFO AIPatternRecognizer: AI ANALYSIS - 2025-10-21 14:04:16 CEST
+2025-10-21 14:04:16 INFO AIPatternRecognizer: Analyzing 250 bars
+2025-10-21 14:04:16 DEBUG AIPatternRecognizer: Flat bars (last 10 complete): 0/10
+2025-10-21 14:04:16 DEBUG AIPatternRecognizer: Unique prices: 170/249
+2025-10-21 14:04:16 DEBUG AIPatternRecognizer: Price range: 85.399902 (1.994285%)
+2025-10-21 14:04:16 DEBUG AIPatternRecognizer: ATR: 3.542829 (0.0827% of price)
+2025-10-21 14:04:16 INFO AIPatternRecognizer: Running pattern detection...
+2025-10-21 14:04:16 DEBUG AIPatternRecognizer: [Pattern] BEARISH ENGULFING (conf: 90.0%)
+2025-10-21 14:04:16 INFO AIPatternRecognizer: Analyzing momentum...
+2025-10-21 14:04:16 INFO AIPatternRecognizer: Detecting trend strength...
+2025-10-21 14:04:16 INFO AIPatternRecognizer: ------------------------------------------------------------
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [PATTERNS] 1 detected: ['ENGULFING']
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [MOMENTUM] BEARISH (strength: 0.41, RSI: 28.692391685036768)
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [TREND] BEARISH (strength: 0.94, ADX: 37.565366373927574)
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [DECISION] SELL with 75.4% confidence
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [SCORES] Bullish: 0.00 | Bearish: 1.90
+2025-10-21 14:04:16 INFO AIPatternRecognizer: ------------------------------------------------------------
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [OK] ✓ TRADE SIGNAL: SELL
+2025-10-21 14:04:16 INFO AIPatternRecognizer: [RISK] Stop: 5.31 pts | TP: 10.63 pts | R:R 1:2.0
+2025-10-21 14:04:16 INFO AIPatternRecognizer: ============================================================
+2025-10-21 14:04:16 INFO ig-scalper: ============================================================
+2025-10-21 14:04:16 INFO ig-scalper: 🎯 AI SIGNAL DETECTED: CS.D.CFEGOLD.CEB.IP
+2025-10-21 14:04:16 INFO ig-scalper:    Direction: SELL
+2025-10-21 14:04:16 INFO ig-scalper:    Confidence: 75.4%
+2025-10-21 14:04:16 INFO ig-scalper:    Patterns: ENGULFING
+2025-10-21 14:04:16 INFO ig-scalper:    Momentum: BEARISH
+2025-10-21 14:04:16 INFO ig-scalper:    Trend Strength: 0.94
+2025-10-21 14:04:16 INFO ig-scalper: ============================================================
+2025-10-21 14:04:16 INFO ig-scalper: 📤 PLACING ORDER:
+2025-10-21 14:04:16 INFO ig-scalper:    CS.D.CFEGOLD.CEB.IP SELL
+2025-10-21 14:04:16 INFO ig-scalper:    Size: 9.4
+2025-10-21 14:04:16 INFO ig-scalper:    Stop: 5.31 pts
+2025-10-21 14:04:16 INFO ig-scalper:    Target: 10.63 pts
+2025-10-21 14:04:16 INFO ig-scalper:    Risk/Reward: 1:2.00
+2025-10-21 14:04:16 DEBUG urllib3.connectionpool: Resetting dropped connection: demo-api.ig.com
+2025-10-21 14:04:16 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/positions/otc HTTP/1.1" 400 64
+2025-10-21 14:04:16 ERROR ig-scalper: ❌ ORDER FAILED CS.D.CFEGOLD.CEB.IP: 400 Client Error: Bad Request for url: https://demo-api.ig.com/gateway/deal/positions/otc
+Traceback (most recent call last):
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\runners\run_ai_autonomous.py", line 460, in main
+    resp = ig.place_order(
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\broker\ig_client.py", line 92, in place_order
+    r.raise_for_status(); return r.json()
+    ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\.venv\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://demo-api.ig.com/gateway/deal/positions/otc
+2025-10-21 14:04:31 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:31 INFO data.multi_data_provider: DATA FETCH REQUEST #6
+2025-10-21 14:04:31 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:04:31 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:31 INFO data.multi_data_provider: [CACHE HIT] Data age: 15.2s | Source: YahooFinance
+2025-10-21 14:04:31 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4268.60
+2025-10-21 14:04:46 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:46 INFO data.multi_data_provider: DATA FETCH REQUEST #7
+2025-10-21 14:04:46 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:04:46 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:04:46 INFO data.multi_data_provider: [CACHE HIT] Data age: 30.2s | Source: YahooFinance
+2025-10-21 14:04:46 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4268.60
+2025-10-21 14:05:01 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:05:01 INFO data.multi_data_provider: DATA FETCH REQUEST #8
+2025-10-21 14:05:01 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:05:01 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:05:01 INFO data.multi_data_provider: [CACHE HIT] Data age: 45.2s | Source: YahooFinance
+2025-10-21 14:05:01 INFO data.multi_data_provider: [CACHE] Bars: 250 | Latest: 4268.60
+2025-10-21 14:05:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:05:16 INFO data.multi_data_provider: DATA FETCH REQUEST #9
+2025-10-21 14:05:16 INFO data.multi_data_provider: Epic: CS.D.CFEGOLD.CEB.IP | Timeframe: 1min | Limit: 250
+2025-10-21 14:05:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:05:16 INFO data.multi_data_provider: [CACHE MISS] Fetching fresh data...
+2025-10-21 14:05:16 INFO data.multi_data_provider: [ATTEMPT] YahooFinance with symbol: GC=F
+2025-10-21 14:05:16 INFO data.multi_data_provider: [YahooFinance] Fetching GC=F (1min) - Request #3
+2025-10-21 14:05:16 DEBUG urllib3.connectionpool: https://query1.finance.yahoo.com:443 "GET /v8/finance/chart/GC=F?interval=1m&range=1d HTTP/1.1" 200 None
+2025-10-21 14:05:16 DEBUG data.multi_data_provider: [YahooFinance] Request completed in 0.08s
+2025-10-21 14:05:16 DEBUG data.multi_data_provider: [YahooFinance] Skipped 20 incomplete bars
+2025-10-21 14:05:16 INFO data.multi_data_provider: [OK] YahooFinance: Retrieved 250 bars for GC=F
+2025-10-21 14:05:16 DEBUG data.multi_data_provider: [YahooFinance] Current price: 4266.40
+2025-10-21 14:05:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:05:16 INFO data.multi_data_provider: [DATA RECEIVED] YahooFinance: 250 bars
+2025-10-21 14:05:16 INFO data.multi_data_provider: [TIME RANGE] 2025-10-21 07:29:00 to 2025-10-21 11:55:12
+2025-10-21 14:05:16 INFO data.multi_data_provider: --------------------------------------------------------------------------------
+2025-10-21 14:05:16 INFO data.multi_data_provider: [FIRST 3 BARS]
+2025-10-21 14:05:16 INFO data.multi_data_provider:   2025-10-21 07:29:00: O=4342.2998 H=4343.1001 L=4340.2002 C=4340.6001 V=214.0
+2025-10-21 14:05:16 INFO data.multi_data_provider:   2025-10-21 07:30:00: O=4340.2002 H=4340.2002 L=4339.5000 C=4340.0000 V=28.0
+2025-10-21 14:05:16 INFO data.multi_data_provider:   2025-10-21 07:40:00: O=4312.5000 H=4320.1001 L=4311.3999 C=4319.7002 V=8328.0
+2025-10-21 14:05:16 INFO data.multi_data_provider: [LAST 3 BARS]
+2025-10-21 14:05:16 INFO data.multi_data_provider:   2025-10-21 11:54:00: O=4269.7002 H=4269.7002 L=4265.7998 C=4266.6001 V=192.0
+2025-10-21 14:05:16 INFO data.multi_data_provider:   2025-10-21 11:55:00: O=4266.5000 H=4267.1001 L=4264.0000 C=4264.2002 V=0.0
+2025-10-21 14:05:16 INFO data.multi_data_provider:   2025-10-21 11:55:12: O=4266.3999 H=4266.3999 L=4266.3999 C=4266.3999 V=0.0
+2025-10-21 14:05:16 INFO data.multi_data_provider: --------------------------------------------------------------------------------
+2025-10-21 14:05:16 INFO data.multi_data_provider: [PRICE STATISTICS]
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Close Min: 4258.6001
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Close Max: 4340.6001
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Close Mean: 4281.8568
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Close Std: 13.6221
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Flat bars (last 10): 1/10
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Price movement: 1.994460%
+2025-10-21 14:05:16 INFO data.multi_data_provider:   Unique close prices: 171/250
+2025-10-21 14:05:16 INFO data.multi_data_provider: ================================================================================
+2025-10-21 14:05:16 INFO data.multi_data_provider: [OK] Data accepted from YahooFinance: 250 bars
+2025-10-21 14:05:16 INFO ig-scalper: 🔍 Analyzing CS.D.CFEGOLD.CEB.IP...
+2025-10-21 14:05:16 INFO AIPatternRecognizer: ============================================================
+2025-10-21 14:05:16 INFO AIPatternRecognizer: AI ANALYSIS - 2025-10-21 14:05:16 CEST
+2025-10-21 14:05:16 INFO AIPatternRecognizer: Analyzing 250 bars
+2025-10-21 14:05:16 DEBUG AIPatternRecognizer: Flat bars (last 10 complete): 0/10
+2025-10-21 14:05:16 DEBUG AIPatternRecognizer: Unique prices: 170/249
+2025-10-21 14:05:16 DEBUG AIPatternRecognizer: Price range: 85.399902 (1.994431%)
+2025-10-21 14:05:16 DEBUG AIPatternRecognizer: ATR: 3.621408 (0.0846% of price)
+2025-10-21 14:05:16 INFO AIPatternRecognizer: Running pattern detection...
+2025-10-21 14:05:16 INFO AIPatternRecognizer: Analyzing momentum...
+2025-10-21 14:05:16 INFO AIPatternRecognizer: Detecting trend strength...
+2025-10-21 14:05:16 INFO AIPatternRecognizer: ------------------------------------------------------------
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [PATTERNS] 0 detected: []
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [MOMENTUM] BEARISH (strength: 0.42, RSI: 24.903581267217632)
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [TREND] BEARISH (strength: 1.00, ADX: 41.70900553455715)
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [DECISION] SELL with 57.2% confidence
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [SCORES] Bullish: 0.00 | Bearish: 1.05
+2025-10-21 14:05:16 INFO AIPatternRecognizer: ------------------------------------------------------------
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [OK] ✓ TRADE SIGNAL: SELL
+2025-10-21 14:05:16 INFO AIPatternRecognizer: [RISK] Stop: 5.43 pts | TP: 10.86 pts | R:R 1:2.0
+2025-10-21 14:05:16 INFO AIPatternRecognizer: ============================================================
+2025-10-21 14:05:16 INFO ig-scalper: ============================================================
+2025-10-21 14:05:16 INFO ig-scalper: 🎯 AI SIGNAL DETECTED: CS.D.CFEGOLD.CEB.IP
+2025-10-21 14:05:16 INFO ig-scalper:    Direction: SELL
+2025-10-21 14:05:16 INFO ig-scalper:    Confidence: 57.2%
+2025-10-21 14:05:16 INFO ig-scalper:    Patterns: 
+2025-10-21 14:05:16 INFO ig-scalper:    Momentum: BEARISH
+2025-10-21 14:05:16 INFO ig-scalper:    Trend Strength: 1.00
+2025-10-21 14:05:16 INFO ig-scalper: ============================================================
+2025-10-21 14:05:16 INFO ig-scalper: 📤 PLACING ORDER:
+2025-10-21 14:05:16 INFO ig-scalper:    CS.D.CFEGOLD.CEB.IP SELL
+2025-10-21 14:05:16 INFO ig-scalper:    Size: 9.1
+2025-10-21 14:05:16 INFO ig-scalper:    Stop: 5.43 pts
+2025-10-21 14:05:16 INFO ig-scalper:    Target: 10.86 pts
+2025-10-21 14:05:16 INFO ig-scalper:    Risk/Reward: 1:2.00
+2025-10-21 14:05:16 DEBUG urllib3.connectionpool: Resetting dropped connection: demo-api.ig.com
+2025-10-21 14:05:16 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "POST /gateway/deal/positions/otc HTTP/1.1" 400 64
+2025-10-21 14:05:16 ERROR ig-scalper: ❌ ORDER FAILED CS.D.CFEGOLD.CEB.IP: 400 Client Error: Bad Request for url: https://demo-api.ig.com/gateway/deal/positions/otc
+Traceback (most recent call last):
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\runners\run_ai_autonomous.py", line 460, in main
+    resp = ig.place_order(
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\broker\ig_client.py", line 92, in place_order
+    r.raise_for_status(); return r.json()
+    ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kumara\PycharmProjects\IG-Scalper\.venv\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://demo-api.ig.com/gateway/deal/positions/otc
+2025-10-21 14:05:31 DEBUG urllib3.connectionpool: Resetting dropped connection: demo-api.ig.com
+2025-10-21 14:05:31 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/accounts HTTP/1.1" 200 555
+2025-10-21 14:05:31 INFO ig-scalper: 💰 Daily P&L: +0.00% | Equity: £28715.41
+2025-10-21 14:05:31 DEBUG urllib3.connectionpool: https://demo-api.ig.com:443 "GET /gateway/deal/positions HTTP/1.1" 200 16
+2025-10-21 14:05:31 INFO ig-scalper: Synced 0 positions from broker
+2025-10-21 14:05:31 WARNING ig-scalper: 🛑 Max consecutive losses: 3/3
+2025-10-21 14:05:31 WARNING ig-scalper:    Cooling off for 10 minutes...
+2025-10-21 14:08:19 INFO ig-scalper: ⚠️ Interrupted by user
+2025-10-21 14:08:19 INFO ig-scalper: ================================================================================
+2025-10-21 14:08:19 INFO ig-scalper: 🛑 SHUTTING DOWN - Generating final report...
+2025-10-21 14:08:19 INFO ig-scalper: ================================================================================
+2025-10-21 14:08:19 INFO ig-scalper: 📊 FINAL STATISTICS:
+2025-10-21 14:08:19 INFO ig-scalper:    Total Trades: 0
+2025-10-21 14:08:19 INFO ig-scalper:    Win Rate: 0.0%
+2025-10-21 14:08:19 INFO ig-scalper:    Wins: 0 | Losses: 0
+2025-10-21 14:08:19 INFO ig-scalper:    Total P&L: +0.00 pts
+2025-10-21 14:08:19 INFO ig-scalper:    Profit Factor: 0.00
+2025-10-21 14:08:19 INFO ig-scalper: 📄 Final report: data\final_ai_report.json
+2025-10-21 14:08:19 INFO ig-scalper: ================================================================================
