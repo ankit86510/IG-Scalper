@@ -37,7 +37,7 @@ class PositionManager:
             'direction': direction,
             'size': size,
             'entry_price': entry_price,
-            'entry_time': datetime.utcnow(),
+            'entry_time': datetime.now(UTC).isoformat(),
             'stop': stop,
             'tp': tp,
             'confidence': confidence,
@@ -50,7 +50,7 @@ class PositionManager:
         """Remove position and log to history"""
         if epic in self.positions:
             pos = self.positions[epic]
-            pos['exit_time'] = datetime.utcnow()
+            pos['exit_time'] = datetime.now(UTC).isoformat()
             pos['exit_price'] = exit_price
             pos['status'] = reason
 

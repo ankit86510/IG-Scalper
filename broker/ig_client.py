@@ -64,23 +64,29 @@ class IGClient:
         )
         r.raise_for_status(); return r.json()
 
-    def place_order(self, epic, direction, size, stop_distance=None, limit_distance=None, trailing=None, tif="FILL_OR_KILL"):
+    def place_order(self, epic, direction, size, currency_code="USD", expiry="-",
+                    stop_distance=None, limit_distance=None, trailing=None,
+                    tif="EXECUTE_AND_ELIMINATE"):
         payload = {
             "epic": epic,
+            "expiry": expiry,
             "direction": direction,
             "size": size,
             "orderType": "MARKET",
             "timeInForce": tif,
             "guaranteedStop": False,
             "forceOpen": True,
+            "currencyCode": currency_code,
         }
         if trailing:
             payload["trailingStop"] = True
             payload["trailingStopIncrement"] = trailing.get("increment")
             payload["stopDistance"] = trailing.get("initial_distance")
         else:
-            if stop_distance is not None: payload["stopDistance"] = stop_distance
-        if limit_distance is not None: payload["limitDistance"] = limit_distance
+            if stop_distance is not None:
+                payload["stopDistance"] = stop_distance
+        if limit_distance is not None:
+            payload["limitDistance"] = limit_distance
 
         r = self.s.post(
             f"{self.base}/positions/otc",
@@ -89,7 +95,9 @@ class IGClient:
             timeout=25,
             verify=self.verify_ssl
         )
-        r.raise_for_status(); return r.json()
+        r.raise_for_status()
+        return r.json()
+
 
     def close_position(self, deal_id, direction, size):
         payload = {"dealId": deal_id, "direction": direction, "size": size, "orderType": "MARKET"}

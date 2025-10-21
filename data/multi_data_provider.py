@@ -8,6 +8,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List
 import time
+import pytz
 
 # Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -16,6 +17,34 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from core.logging_utils import setup_logging, log_success, log_error, log_warning, safe_log
 import logging
 logger = logging.getLogger(__name__)
+
+
+# Add this class to your multi_data_provider.py file
+class TimezoneAwareLogger:
+    """Wrapper to log all timestamps in Europe/Rome timezone"""
+
+    def __init__(self, logger):
+        self.logger = logger
+        self.tz_rome = pytz.timezone('Europe/Rome')
+
+    def format_time(self, dt):
+        """Convert any datetime to Rome timezone"""
+        if dt.tzinfo is None:
+            dt = pytz.UTC.localize(dt)
+        return dt.astimezone(self.tz_rome).strftime('%Y-%m-%d %H:%M:%S %Z')
+
+    def info(self, msg):
+        self.logger.info(msg)
+
+    def debug(self, msg):
+        self.logger.debug(msg)
+
+    def warning(self, msg):
+        self.logger.warning(msg)
+
+    def error(self, msg):
+        self.logger.error(msg)
+
 
 class YahooFinanceProvider:
     def __init__(self):
@@ -242,6 +271,9 @@ class SmartDataAggregator:
             "provider_usage": {}
         }
 
+        # ADD THIS:
+        self.tz_rome = pytz.timezone('Europe/Rome')
+
         safe_log(logger, 'info', "=" * 80)
         safe_log(logger, 'info', "Initializing Smart Data Aggregator")
         safe_log(logger, 'info', "=" * 80)
@@ -298,11 +330,23 @@ class SmartDataAggregator:
             return False
         return (time.time() - self.cache[key]["timestamp"]) < self.cache_duration
 
+    def _to_rome_time(self, dt):
+        """Convert pandas datetime index to Rome timezone string"""
+        if dt.tzinfo is None:
+            dt = pytz.UTC.localize(dt)
+        return dt.astimezone(self.tz_rome).strftime('%Y-%m-%d %H:%M:%S %Z')
+
     def get_bars(self, ig_epic: str, timeframe: str = "5min", limit: int = 100) -> pd.DataFrame:
+        """
+        Fetch bars with Rome timezone logging and penultimate bar focus
+        """
         self.fetch_stats["total_requests"] += 1
 
+        rome_time = datetime.now(pytz.UTC).astimezone(self.tz_rome)
+
         safe_log(logger, 'info', "=" * 80)
-        safe_log(logger, 'info', f"DATA FETCH REQUEST #{self.fetch_stats['total_requests']}")
+        safe_log(logger, 'info',
+                 f"DATA FETCH #{self.fetch_stats['total_requests']} - {rome_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
         safe_log(logger, 'info', f"Epic: {ig_epic} | Timeframe: {timeframe} | Limit: {limit}")
         safe_log(logger, 'info', "=" * 80)
 
@@ -314,17 +358,22 @@ class SmartDataAggregator:
             cached_data = self.cache[cache_key]
             age = time.time() - cached_data["timestamp"]
 
-            safe_log(logger, 'info', f"[CACHE HIT] Data age: {age:.1f}s | Source: {cached_data['source']}")
-            safe_log(logger, 'info', f"[CACHE] Bars: {len(cached_data['data'])} | Latest: {cached_data['data']['close'].iloc[-1]:.2f}")
+            safe_log(logger, 'info', f"[CACHE HIT] Age: {age:.1f}s | Source: {cached_data['source']}")
+
+            # Show PENULTIMATE bar (not latest incomplete)
+            if len(cached_data['data']) >= 2:
+                penultimate = cached_data['data'].iloc[-2]
+                penultimate_time = self._to_rome_time(cached_data['data'].index[-2])
+                safe_log(logger, 'info',
+                         f"[CACHE] Bars: {len(cached_data['data'])} | Penultimate: {penultimate['close']:.2f} @ {penultimate_time}")
 
             return cached_data["data"]
 
         safe_log(logger, 'info', "[CACHE MISS] Fetching fresh data...")
 
-        # Get mappings
         mappings = self.symbol_map.get(ig_epic, {})
         if not mappings:
-            log_warning(logger, f"No symbol mappings found for {ig_epic}")
+            log_warning(logger, f"No symbol mappings for {ig_epic}")
 
         # Try each provider
         for provider_name, provider in self.providers:
@@ -332,83 +381,87 @@ class SmartDataAggregator:
                 continue
 
             symbol = mappings[provider_name]
-            safe_log(logger, 'info', f"[ATTEMPT] {provider_name} with symbol: {symbol}")
+            safe_log(logger, 'info', f"[ATTEMPT] {provider_name}: {symbol}")
 
             try:
                 df = provider.get_bars(symbol, timeframe, limit)
 
                 if not df.empty and len(df) >= 10:
-                    # ==============================================================
-                    # DETAILED DATA LOGGING FOR DEBUGGING
-                    # ==============================================================
+                    # ====================================
+                    # ROME TIMEZONE LOGGING
+                    # ====================================
                     safe_log(logger, 'info', "=" * 80)
                     safe_log(logger, 'info', f"[DATA RECEIVED] {provider_name}: {len(df)} bars")
-                    safe_log(logger, 'info', f"[TIME RANGE] {df.index[0]} to {df.index[-1]}")
+
+                    start_rome = self._to_rome_time(df.index[0])
+                    end_rome = self._to_rome_time(df.index[-1])
+                    safe_log(logger, 'info', f"[TIME RANGE] {start_rome} to {end_rome}")
                     safe_log(logger, 'info', "-" * 80)
 
-                    # Log first 3 bars
+                    # Log FIRST 3 bars
                     safe_log(logger, 'info', "[FIRST 3 BARS]")
                     for i in range(min(3, len(df))):
                         bar = df.iloc[i]
+                        bar_time = self._to_rome_time(df.index[i])
                         safe_log(logger, 'info',
-                                 f"  {df.index[i]}: O={bar['open']:.4f} H={bar['high']:.4f} "
+                                 f"  {bar_time}: O={bar['open']:.4f} H={bar['high']:.4f} "
                                  f"L={bar['low']:.4f} C={bar['close']:.4f} V={bar['volume']}")
 
-                    # Log last 3 bars
-                    safe_log(logger, 'info', "[LAST 3 BARS]")
-                    for i in range(max(0, len(df) - 3), len(df)):
+                    # Log PENULTIMATE 3 bars (NOT latest - it's incomplete!)
+                    safe_log(logger, 'info', "[PENULTIMATE 3 BARS] (Latest bar excluded - still forming)")
+                    for i in range(max(0, len(df) - 4), len(df) - 1):  # -4 to -2
                         bar = df.iloc[i]
+                        bar_time = self._to_rome_time(df.index[i])
                         safe_log(logger, 'info',
-                                 f"  {df.index[i]}: O={bar['open']:.4f} H={bar['high']:.4f} "
+                                 f"  {bar_time}: O={bar['open']:.4f} H={bar['high']:.4f} "
                                  f"L={bar['low']:.4f} C={bar['close']:.4f} V={bar['volume']}")
 
                     safe_log(logger, 'info', "-" * 80)
 
-                    # Statistics
-                    safe_log(logger, 'info', "[PRICE STATISTICS]")
-                    safe_log(logger, 'info', f"  Close Min: {df['close'].min():.4f}")
-                    safe_log(logger, 'info', f"  Close Max: {df['close'].max():.4f}")
-                    safe_log(logger, 'info', f"  Close Mean: {df['close'].mean():.4f}")
-                    safe_log(logger, 'info', f"  Close Std: {df['close'].std():.4f}")
+                    # Statistics on COMPLETE bars only (exclude last)
+                    complete_df = df.iloc[:-1]
+                    safe_log(logger, 'info', "[PRICE STATS] (Complete bars only)")
+                    safe_log(logger, 'info', f"  Close Min: {complete_df['close'].min():.4f}")
+                    safe_log(logger, 'info', f"  Close Max: {complete_df['close'].max():.4f}")
+                    safe_log(logger, 'info', f"  Close Mean: {complete_df['close'].mean():.4f}")
+                    safe_log(logger, 'info', f"  Close Std: {complete_df['close'].std():.4f}")
 
-                    # Check for flat data
-                    recent = df.tail(10)
+                    # Check for flat data in COMPLETE bars
+                    recent_complete = complete_df.tail(10)
                     flat_count = 0
-                    for idx in range(len(recent)):
-                        bar = recent.iloc[idx]
+                    for idx in range(len(recent_complete)):
+                        bar = recent_complete.iloc[idx]
                         if bar['open'] == bar['high'] == bar['low'] == bar['close']:
                             flat_count += 1
 
-                    safe_log(logger, 'info', f"  Flat bars (last 10): {flat_count}/10")
+                    safe_log(logger, 'info', f"  Flat bars (last 10 complete): {flat_count}/10")
 
-                    # Price movement
-                    price_range = df['high'].max() - df['low'].min()
-                    avg_price = df['close'].mean()
+                    # Price movement (complete bars)
+                    price_range = complete_df['high'].max() - complete_df['low'].min()
+                    avg_price = complete_df['close'].mean()
                     if avg_price > 0:
                         movement_pct = (price_range / avg_price) * 100
                         safe_log(logger, 'info', f"  Price movement: {movement_pct:.6f}%")
 
-                    # Check for unique values
-                    unique_closes = df['close'].nunique()
-                    safe_log(logger, 'info', f"  Unique close prices: {unique_closes}/{len(df)}")
+                    unique_closes = complete_df['close'].nunique()
+                    safe_log(logger, 'info', f"  Unique close prices: {unique_closes}/{len(complete_df)}")
 
                     safe_log(logger, 'info', "=" * 80)
-                    # ==============================================================
 
-                    # Data quality check
-                    if flat_count > 7:  # More than 70% flat
+                    # Data quality checks
+                    if flat_count > 7:
                         log_warning(logger,
                                     f"{provider_name}: TOO MANY FLAT BARS ({flat_count}/10) - "
-                                    f"Market may be closed or data is stale. Trying next provider...")
+                                    f"Market may be closed. Trying next provider...")
                         continue
 
-                    if unique_closes <= 1:  # All prices the same
+                    if unique_closes <= 1:
                         log_warning(logger,
-                                    f"{provider_name}: ALL PRICES IDENTICAL ({df['close'].iloc[-1]:.4f}) - "
-                                    f"Data is completely flat. Trying next provider...")
+                                    f"{provider_name}: ALL PRICES IDENTICAL - "
+                                    f"Data is stale. Trying next provider...")
                         continue
 
-                    if avg_price > 0 and movement_pct < 0.005:  # Less than 0.005% movement
+                    if avg_price > 0 and movement_pct < 0.001:  # Less than 0.001%
                         log_warning(logger,
                                     f"{provider_name}: INSUFFICIENT MOVEMENT ({movement_pct:.6f}%) - "
                                     f"Market may be closed. Trying next provider...")
@@ -458,7 +511,7 @@ class SmartDataAggregator:
 
                 if not df.empty:
                     self.fetch_stats["successful_fetches"] += 1
-                    log_success(logger, f"Data fetched from IG API: {len(df)} bars")
+                    log_success(logger, f"Data from IG API: {len(df)} bars")
                     return df
 
             except Exception as e:
@@ -466,6 +519,7 @@ class SmartDataAggregator:
 
         log_error(logger, f"All data sources exhausted for {ig_epic}")
         return pd.DataFrame()
+
 
     def get_stats(self) -> Dict:
         total = max(1, self.fetch_stats['total_requests'])

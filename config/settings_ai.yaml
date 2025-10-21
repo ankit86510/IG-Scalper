@@ -29,9 +29,13 @@ execution:
 
 # AI Strategy Configuration
 ai_strategy:
-  # Pattern recognition settings
-  confidence_threshold: 0.30   # Minimum confidence to take a trade (0-1)
-  lookback_candles: 50         # Number of candles to analyze
+  confidence_threshold: 0.30   # Was 0.65 - lowered for CFD sensitivity
+  lookback_candles: 50
+
+  # NEW: CFD-specific settings
+  cfd_mode: true                    # Enable CFD optimizations
+  min_movement_pct: 0.005           # 0.5% minimum (vs 1% for stocks)
+  pattern_confidence_boost: 1.3     # Multiply pattern confidence by 1.3x
 
   # Risk management
   atr_period: 14               # ATR period for volatility measurement
