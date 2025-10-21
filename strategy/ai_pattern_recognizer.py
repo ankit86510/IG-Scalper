@@ -49,15 +49,56 @@ class AIPatternRecognizer(Strategy):
         safe_log(self.logger, 'info', "=" * 80)
 
     def calculate_atr(self, df: pd.DataFrame) -> pd.Series:
-        """Calculate Average True Range"""
-        h, l, c = df["high"], df["low"], df["close"]
+        """
+        Calculate Average True Range with flat data handling
+        Returns ATR series, handling cases with minimal price movement
+        """
+        h = df["high"]
+        l = df["low"]
+        c = df["close"]
         prev_c = c.shift(1)
-        tr = pd.concat([
-            (h - l).abs(),
-            (h - prev_c).abs(),
-            (l - prev_c).abs()
-        ], axis=1).max(axis=1)
-        return tr.rolling(self.atr_period).mean()
+
+        # Calculate True Range components
+        tr1 = (h - l).abs()
+        tr2 = (h - prev_c).abs()
+        tr3 = (l - prev_c).abs()
+
+        # Take maximum of the three
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+
+        # Check if TR is all zeros or near-zero (flat data)
+        if (tr > 0).sum() < len(tr) * 0.3:  # Less than 30% have movement
+            safe_log(self.logger, 'warning',
+                     f"Flat data detected: {(tr == 0).sum()}/{len(tr)} bars have zero True Range")
+
+            # For completely flat data, use a tiny default value
+            # This allows ATR calculation but signals should be rejected later
+            tr = tr.replace(0, 0.0001)  # Tiny value instead of zero
+
+        # Calculate ATR
+        atr = tr.rolling(self.atr_period).mean()
+
+        # If still NaN at the end (shouldn't happen now), forward fill
+        if atr.isna().any():
+            # Forward fill NaN values
+            atr = atr.fillna(method='ffill')
+
+            # If still NaN at start (before rolling window), use median
+            if atr.isna().any():
+                median_atr = atr.median()
+                if pd.isna(median_atr) or median_atr == 0:
+                    median_atr = df['close'].std() * 0.01  # 1% of price std as fallback
+                atr = atr.fillna(median_atr)
+
+        # Final sanity check
+        if (atr <= 0).any():
+            safe_log(self.logger, 'warning',
+                     "ATR contains zero/negative values, replacing with minimum positive value")
+            min_positive = atr[atr > 0].min() if (atr > 0).any() else 0.0001
+            atr = atr.replace(0, min_positive)
+            atr = atr.clip(lower=min_positive)
+
+        return atr
 
     def detect_hammer(self, df: pd.DataFrame, idx: int = -1) -> Dict:
         """Detect Hammer pattern"""
@@ -405,9 +446,8 @@ class AIPatternRecognizer(Strategy):
 
     def on_bar(self, df: pd.DataFrame) -> Optional[Dict]:
         """
-        FIXED: Main strategy entry point with working logging
+        Main strategy entry point with flat data detection
         """
-        # Log every call
         safe_log(self.logger, 'info', "=" * 60)
         safe_log(self.logger, 'info', "AI PATTERN ANALYSIS STARTED")
         safe_log(self.logger, 'info', f"Analyzing {len(df)} bars")
@@ -417,13 +457,55 @@ class AIPatternRecognizer(Strategy):
             safe_log(self.logger, 'info', "=" * 60)
             return None
 
+        # PRE-CHECK: Detect flat data before calculations
+        recent_10 = df.tail(10)
+        flat_bars = sum(1 for i in range(len(recent_10))
+                        if recent_10.iloc[i]['open'] == recent_10.iloc[i]['high'] ==
+                        recent_10.iloc[i]['low'] == recent_10.iloc[i]['close'])
+
+        unique_closes = df['close'].nunique()
+        price_range = df['high'].max() - df['low'].min()
+        price_avg = df['close'].mean()
+
+        safe_log(self.logger, 'debug', f"Flat bars (last 10): {flat_bars}/10")
+        safe_log(self.logger, 'debug', f"Unique prices: {unique_closes}/{len(df)}")
+        safe_log(self.logger, 'debug', f"Price range: {price_range:.6f} ({(price_range / price_avg * 100):.6f}%)")
+
+        # REJECT if data is too flat
+        if unique_closes <= 1:
+            log_error(self.logger, "ALL PRICES IDENTICAL - Market closed or data error")
+            safe_log(self.logger, 'info', "=" * 60)
+            return None
+
+        if flat_bars > 7:
+            log_error(self.logger, f"TOO MANY FLAT BARS ({flat_bars}/10) - Insufficient activity")
+            safe_log(self.logger, 'info', "=" * 60)
+            return None
+
+        if price_avg > 0 and (price_range / price_avg * 100) < 0.01:
+            log_error(self.logger, f"INSUFFICIENT MOVEMENT ({(price_range / price_avg * 100):.6f}%)")
+            safe_log(self.logger, 'info', "=" * 60)
+            return None
+
+        # Now calculate ATR
         df = df.copy()
         df['atr'] = self.calculate_atr(df)
 
-        if df['atr'].isna().any():
-            log_error(self.logger, "ATR calculation failed (NaN values)")
+        atr_val = df['atr'].iloc[-1]
+
+        # Check if ATR is suspiciously low (indicates flat data)
+        avg_price = df['close'].mean()
+        atr_pct = (atr_val / avg_price) * 100 if avg_price > 0 else 0
+
+        safe_log(self.logger, 'debug', f"ATR: {atr_val:.6f} ({atr_pct:.4f}% of price)")
+
+        if atr_pct < 0.001:  # Less than 0.001% of price
+            log_warning(self.logger,
+                        f"ATR too low ({atr_pct:.6f}%) - Data appears flat, rejecting analysis")
             safe_log(self.logger, 'info', "=" * 60)
             return None
+
+        # Continue with rest of analysis...
 
         # Run all analyses
         safe_log(self.logger, 'info', "Running pattern detection...")

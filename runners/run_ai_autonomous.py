@@ -325,6 +325,19 @@ def main():
                     # Get price data
                     df = get_bars_from_aggregator(aggregator, epic, timeframe, lookback=250)
 
+                    # Validate data quality
+                    if len(df) > 0:
+                        # Check if all prices are the same (stale data)
+                        if df['close'].nunique() == 1:
+                            log.warning(f"{epic}: Stale data detected (all prices identical), skipping...")
+                            continue
+
+                        # Check for sufficient price movement
+                        price_range = (df['high'].max() - df['low'].min()) / df['close'].iloc[-1]
+                        if price_range < 0.001:  # Less than 0.1% range
+                            log.warning(f"{epic}: Insufficient price movement, market may be closed")
+                            continue
+
                     if df is None or df.empty or len(df) < 50:
                         continue
 

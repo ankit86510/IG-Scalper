@@ -56,13 +56,13 @@ data_sources:
   # Primary (FREE)
   yahoo_finance:
     enabled: true
-    priority: 1
+    priority: 2
 
   # Secondary (FREE tier available)
   twelve_data:
     enabled: true
     api_key: "${TWELVE_DATA_KEY}"
-    priority: 2
+    priority: 1
 
   # Last resort
   alpha_vantage:
@@ -90,7 +90,7 @@ symbols:
   # - "CMD.USCrude.CFD.IP"   # Crude Oil
 
 logging:
-  level: "INFO"  # DEBUG for detailed analysis, INFO for normal operation
+  level: "DEBUG"  # DEBUG for detailed analysis, INFO for normal operation
   sink: "logs/ai_bot.log"
 
 # Database for storing analysis results

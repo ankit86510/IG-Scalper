@@ -1,7 +1,7 @@
 """
 Multi-Source Data Provider with Standardized Logging
 """
-
+import urllib3
 import requests
 import pandas as pd
 import numpy as np
@@ -9,131 +9,13 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, List
 import time
 
+# Disable SSL warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # STANDARDIZED LOGGING
 from core.logging_utils import setup_logging, log_success, log_error, log_warning, safe_log
 import logging
 logger = logging.getLogger(__name__)
-
-
-class AlphaVantageProvider:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.base_url = "https://www.alphavantage.co/query"
-        self.request_count = 0
-
-    def get_bars(self, symbol: str, timeframe: str = "1min", limit: int = 100) -> pd.DataFrame:
-        self.request_count += 1
-        safe_log(logger, 'info', f"[AlphaVantage] Fetching {symbol} ({timeframe}) - Request #{self.request_count}")
-
-        interval_map = {"1min": "1min", "3min": "5min", "5min": "5min", "15min": "15min", "60min": "60min"}
-        interval = interval_map.get(timeframe, "5min")
-
-        params = {
-            "function": "TIME_SERIES_INTRADAY",
-            "symbol": symbol,
-            "interval": interval,
-            "apikey": self.api_key,
-            "outputsize": "full"
-        }
-
-        try:
-            start_time = time.time()
-            response = requests.get(self.base_url, params=params, timeout=30)
-            elapsed = time.time() - start_time
-
-            safe_log(logger, 'debug', f"[AlphaVantage] Request completed in {elapsed:.2f}s")
-            data = response.json()
-
-            if "Time Series" not in str(data):
-                log_warning(logger, f"AlphaVantage API limit or error for {symbol}")
-                return pd.DataFrame()
-
-            ts_key = f"Time Series ({interval})"
-            if ts_key not in data:
-                log_error(logger, f"AlphaVantage unexpected response format for {symbol}")
-                return pd.DataFrame()
-
-            bars = []
-            for timestamp, values in list(data[ts_key].items())[:limit]:
-                bars.append({
-                    'ts': pd.to_datetime(timestamp),
-                    'open': float(values['1. open']),
-                    'high': float(values['2. high']),
-                    'low': float(values['3. low']),
-                    'close': float(values['4. close']),
-                    'volume': int(values['5. volume'])
-                })
-
-            df = pd.DataFrame(bars).set_index('ts').sort_index()
-            log_success(logger, f"AlphaVantage: Retrieved {len(df)} bars for {symbol}")
-
-            return df
-
-        except requests.Timeout:
-            log_error(logger, f"AlphaVantage timeout fetching {symbol}")
-            return pd.DataFrame()
-        except Exception as e:
-            log_error(logger, f"AlphaVantage error fetching {symbol}: {e}")
-            return pd.DataFrame()
-
-
-class TwelveDataProvider:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.base_url = "https://api.twelvedata.com"
-        self.request_count = 0
-
-    def get_bars(self, symbol: str, timeframe: str = "1min", limit: int = 100) -> pd.DataFrame:
-        self.request_count += 1
-        safe_log(logger, 'info', f"[TwelveData] Fetching {symbol} ({timeframe}) - Request #{self.request_count}")
-
-        interval_map = {"1min": "1min", "3min": "3min", "5min": "5min", "15min": "15min", "60min": "1h"}
-        params = {
-            "symbol": symbol,
-            "interval": interval_map.get(timeframe, "5min"),
-            "outputsize": limit,
-            "apikey": self.api_key
-        }
-
-        try:
-            start_time = time.time()
-            response = requests.get(f"{self.base_url}/time_series", params=params, timeout=30)
-            elapsed = time.time() - start_time
-
-            safe_log(logger, 'debug', f"[TwelveData] Request completed in {elapsed:.2f}s")
-            data = response.json()
-
-            if data.get("status") == "error":
-                log_warning(logger, f"TwelveData API Error: {data.get('message')}")
-                return pd.DataFrame()
-
-            if "values" not in data:
-                log_error(logger, f"TwelveData: No data returned for {symbol}")
-                return pd.DataFrame()
-
-            bars = []
-            for bar in data["values"]:
-                bars.append({
-                    'ts': pd.to_datetime(bar['datetime']),
-                    'open': float(bar['open']),
-                    'high': float(bar['high']),
-                    'low': float(bar['low']),
-                    'close': float(bar['close']),
-                    'volume': int(bar.get('volume', 0))
-                })
-
-            df = pd.DataFrame(bars).set_index('ts').sort_index()
-            log_success(logger, f"TwelveData: Retrieved {len(df)} bars for {symbol}")
-
-            return df
-
-        except requests.Timeout:
-            log_error(logger, f"TwelveData timeout fetching {symbol}")
-            return pd.DataFrame()
-        except Exception as e:
-            log_error(logger, f"TwelveData error: {e}")
-            return pd.DataFrame()
-
 
 class YahooFinanceProvider:
     def __init__(self):
@@ -157,7 +39,13 @@ class YahooFinanceProvider:
             url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
             params = {"interval": interval, "range": period}
 
-            response = self.session.get(url, params=params, timeout=30)
+            # ADD verify=False to disable SSL verification
+            response = self.session.get(
+                url,
+                params=params,
+                timeout=30,
+                verify=False  # ← FIX: Disable SSL verification
+            )
             elapsed = time.time() - start_time
 
             safe_log(logger, 'debug', f"[YahooFinance] Request completed in {elapsed:.2f}s")
@@ -207,6 +95,138 @@ class YahooFinanceProvider:
             log_error(logger, f"YahooFinance error: {e}")
             return pd.DataFrame()
 
+class TwelveDataProvider:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://api.twelvedata.com"
+        self.request_count = 0
+
+    def get_bars(self, symbol: str, timeframe: str = "1min", limit: int = 100) -> pd.DataFrame:
+        self.request_count += 1
+        safe_log(logger, 'info', f"[TwelveData] Fetching {symbol} ({timeframe}) - Request #{self.request_count}")
+
+        interval_map = {"1min": "1min", "3min": "3min", "5min": "5min", "15min": "15min", "60min": "1h"}
+        params = {
+            "symbol": symbol,
+            "interval": interval_map.get(timeframe, "5min"),
+            "outputsize": limit,
+            "apikey": self.api_key
+        }
+
+        try:
+            start_time = time.time()
+            # ADD verify=False to disable SSL verification
+            response = requests.get(
+                f"{self.base_url}/time_series",
+                params=params,
+                timeout=30,
+                verify=False  # ← FIX: Disable SSL verification
+            )
+            elapsed = time.time() - start_time
+
+            safe_log(logger, 'debug', f"[TwelveData] Request completed in {elapsed:.2f}s")
+            data = response.json()
+
+            if data.get("status") == "error":
+                log_warning(logger, f"TwelveData API Error: {data.get('message')}")
+                return pd.DataFrame()
+
+            if "values" not in data:
+                log_error(logger, f"TwelveData: No data returned for {symbol}")
+                return pd.DataFrame()
+
+            bars = []
+            for bar in data["values"]:
+                bars.append({
+                    'ts': pd.to_datetime(bar['datetime']),
+                    'open': float(bar['open']),
+                    'high': float(bar['high']),
+                    'low': float(bar['low']),
+                    'close': float(bar['close']),
+                    'volume': int(bar.get('volume', 0))
+                })
+
+            df = pd.DataFrame(bars).set_index('ts').sort_index()
+            log_success(logger, f"TwelveData: Retrieved {len(df)} bars for {symbol}")
+
+            return df
+
+        except requests.Timeout:
+            log_error(logger, f"TwelveData timeout fetching {symbol}")
+            return pd.DataFrame()
+        except Exception as e:
+            log_error(logger, f"TwelveData error: {e}")
+            return pd.DataFrame()
+
+
+class AlphaVantageProvider:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://www.alphavantage.co/query"
+        self.request_count = 0
+
+    def get_bars(self, symbol: str, timeframe: str = "1min", limit: int = 100) -> pd.DataFrame:
+        self.request_count += 1
+        safe_log(logger, 'info', f"[AlphaVantage] Fetching {symbol} ({timeframe}) - Request #{self.request_count}")
+
+        interval_map = {"1min": "1min", "3min": "5min", "5min": "5min", "15min": "15min", "60min": "60min"}
+        interval = interval_map.get(timeframe, "5min")
+
+        params = {
+            "function": "TIME_SERIES_INTRADAY",
+            "symbol": symbol,
+            "interval": interval,
+            "apikey": self.api_key,
+            "outputsize": "full"
+        }
+
+        try:
+            start_time = time.time()
+            # ADD verify=False to disable SSL verification
+            response = requests.get(
+                self.base_url,
+                params=params,
+                timeout=30,
+                verify=False  # ← FIX: Disable SSL verification
+            )
+            elapsed = time.time() - start_time
+
+            safe_log(logger, 'debug', f"[AlphaVantage] Request completed in {elapsed:.2f}s")
+            data = response.json()
+
+            if "Time Series" not in str(data):
+                log_warning(logger, f"AlphaVantage API limit or error for {symbol}")
+                return pd.DataFrame()
+
+            ts_key = f"Time Series ({interval})"
+            if ts_key not in data:
+                log_error(logger, f"AlphaVantage unexpected response format for {symbol}")
+                return pd.DataFrame()
+
+            bars = []
+            for timestamp, values in list(data[ts_key].items())[:limit]:
+                bars.append({
+                    'ts': pd.to_datetime(timestamp),
+                    'open': float(values['1. open']),
+                    'high': float(values['2. high']),
+                    'low': float(values['3. low']),
+                    'close': float(values['4. close']),
+                    'volume': int(values['5. volume'])
+                })
+
+            df = pd.DataFrame(bars).set_index('ts').sort_index()
+            log_success(logger, f"AlphaVantage: Retrieved {len(df)} bars for {symbol}")
+
+            return df
+
+        except requests.Timeout:
+            log_error(logger, f"AlphaVantage timeout fetching {symbol}")
+            return pd.DataFrame()
+        except Exception as e:
+            log_error(logger, f"AlphaVantage error fetching {symbol}: {e}")
+            return pd.DataFrame()
+
+
 
 class SmartDataAggregator:
     def __init__(self, config: Dict, ig_client=None):
@@ -226,9 +246,11 @@ class SmartDataAggregator:
         safe_log(logger, 'info', "Initializing Smart Data Aggregator")
         safe_log(logger, 'info', "=" * 80)
 
+
         # Yahoo Finance (FREE)
         self.providers.append(("YahooFinance", YahooFinanceProvider()))
         log_success(logger, "Yahoo Finance provider initialized (FREE)")
+
 
         # TwelveData
         if config.get("twelve_data_key"):
@@ -316,6 +338,83 @@ class SmartDataAggregator:
                 df = provider.get_bars(symbol, timeframe, limit)
 
                 if not df.empty and len(df) >= 10:
+                    # ==============================================================
+                    # DETAILED DATA LOGGING FOR DEBUGGING
+                    # ==============================================================
+                    safe_log(logger, 'info', "=" * 80)
+                    safe_log(logger, 'info', f"[DATA RECEIVED] {provider_name}: {len(df)} bars")
+                    safe_log(logger, 'info', f"[TIME RANGE] {df.index[0]} to {df.index[-1]}")
+                    safe_log(logger, 'info', "-" * 80)
+
+                    # Log first 3 bars
+                    safe_log(logger, 'info', "[FIRST 3 BARS]")
+                    for i in range(min(3, len(df))):
+                        bar = df.iloc[i]
+                        safe_log(logger, 'info',
+                                 f"  {df.index[i]}: O={bar['open']:.4f} H={bar['high']:.4f} "
+                                 f"L={bar['low']:.4f} C={bar['close']:.4f} V={bar['volume']}")
+
+                    # Log last 3 bars
+                    safe_log(logger, 'info', "[LAST 3 BARS]")
+                    for i in range(max(0, len(df) - 3), len(df)):
+                        bar = df.iloc[i]
+                        safe_log(logger, 'info',
+                                 f"  {df.index[i]}: O={bar['open']:.4f} H={bar['high']:.4f} "
+                                 f"L={bar['low']:.4f} C={bar['close']:.4f} V={bar['volume']}")
+
+                    safe_log(logger, 'info', "-" * 80)
+
+                    # Statistics
+                    safe_log(logger, 'info', "[PRICE STATISTICS]")
+                    safe_log(logger, 'info', f"  Close Min: {df['close'].min():.4f}")
+                    safe_log(logger, 'info', f"  Close Max: {df['close'].max():.4f}")
+                    safe_log(logger, 'info', f"  Close Mean: {df['close'].mean():.4f}")
+                    safe_log(logger, 'info', f"  Close Std: {df['close'].std():.4f}")
+
+                    # Check for flat data
+                    recent = df.tail(10)
+                    flat_count = 0
+                    for idx in range(len(recent)):
+                        bar = recent.iloc[idx]
+                        if bar['open'] == bar['high'] == bar['low'] == bar['close']:
+                            flat_count += 1
+
+                    safe_log(logger, 'info', f"  Flat bars (last 10): {flat_count}/10")
+
+                    # Price movement
+                    price_range = df['high'].max() - df['low'].min()
+                    avg_price = df['close'].mean()
+                    if avg_price > 0:
+                        movement_pct = (price_range / avg_price) * 100
+                        safe_log(logger, 'info', f"  Price movement: {movement_pct:.6f}%")
+
+                    # Check for unique values
+                    unique_closes = df['close'].nunique()
+                    safe_log(logger, 'info', f"  Unique close prices: {unique_closes}/{len(df)}")
+
+                    safe_log(logger, 'info', "=" * 80)
+                    # ==============================================================
+
+                    # Data quality check
+                    if flat_count > 7:  # More than 70% flat
+                        log_warning(logger,
+                                    f"{provider_name}: TOO MANY FLAT BARS ({flat_count}/10) - "
+                                    f"Market may be closed or data is stale. Trying next provider...")
+                        continue
+
+                    if unique_closes <= 1:  # All prices the same
+                        log_warning(logger,
+                                    f"{provider_name}: ALL PRICES IDENTICAL ({df['close'].iloc[-1]:.4f}) - "
+                                    f"Data is completely flat. Trying next provider...")
+                        continue
+
+                    if avg_price > 0 and movement_pct < 0.005:  # Less than 0.005% movement
+                        log_warning(logger,
+                                    f"{provider_name}: INSUFFICIENT MOVEMENT ({movement_pct:.6f}%) - "
+                                    f"Market may be closed. Trying next provider...")
+                        continue
+
+                    # Data passed quality checks
                     self.fetch_stats["successful_fetches"] += 1
                     self.fetch_stats["provider_usage"][provider_name] = \
                         self.fetch_stats["provider_usage"].get(provider_name, 0) + 1
@@ -326,18 +425,15 @@ class SmartDataAggregator:
                         "source": provider_name
                     }
 
-                    safe_log(logger, 'info', "=" * 80)
-                    log_success(logger, f"Data fetched from {provider_name}: {len(df)} bars")
-                    safe_log(logger, 'info', f"Latest: O={df['open'].iloc[-1]:.2f} H={df['high'].iloc[-1]:.2f} "
-                           f"L={df['low'].iloc[-1]:.2f} C={df['close'].iloc[-1]:.2f}")
-                    safe_log(logger, 'info', "=" * 80)
-
+                    log_success(logger, f"Data accepted from {provider_name}: {len(df)} bars")
                     return df
                 else:
                     log_warning(logger, f"{provider_name} returned insufficient data ({len(df)} bars)")
 
             except Exception as e:
                 log_error(logger, f"{provider_name} exception: {e}")
+                import traceback
+                safe_log(logger, 'debug', traceback.format_exc())
                 continue
 
         # IG Fallback
