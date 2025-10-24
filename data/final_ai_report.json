@@ -1,21 +1,33 @@
 {
-  "generated_at": "2025-10-15T19:36:22.871093",
+  "generated_at": "2025-10-24T10:35:59.682205+00:00",
   "performance": {
     "total_trades": 0
   },
   "recent_trades": [],
   "decision_log": [
     {
-      "timestamp": "2025-10-15T19:35:02.204510+00:00",
+      "timestamp": "2025-10-24T10:32:42.894382+00:00",
       "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
+      "signal": true,
+      "confidence": 0.4878048780487805
     },
     {
-      "timestamp": "2025-10-15T19:36:02.466762+00:00",
+      "timestamp": "2025-10-24T10:33:43.207385+00:00",
       "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": false,
-      "confidence": 0.0
+      "signal": true,
+      "confidence": 0.4878048780487805
+    },
+    {
+      "timestamp": "2025-10-24T10:34:43.354994+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.4719484007033144
+    },
+    {
+      "timestamp": "2025-10-24T10:35:43.701076+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.4564567166038965
     }
   ]
 }

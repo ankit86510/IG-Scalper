@@ -25,7 +25,7 @@ risk:
 
 execution:
   time_in_force: "FILL_OR_KILL"
-  use_trailing_stop: true   # Enable dynamic trailing stops
+  use_trailing_stop: false   # Enable dynamic trailing stops
 
 # AI Strategy Configuration
 ai_strategy:
