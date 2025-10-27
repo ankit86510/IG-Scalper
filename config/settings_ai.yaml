@@ -25,7 +25,9 @@ risk:
 
 execution:
   time_in_force: "FILL_OR_KILL"
-  use_trailing_stop: false   # Enable dynamic trailing stops
+  use_trailing_stop: true          # ✅ Enable this
+  trailing_stop_increment: 0.5     # ✅ Add this (how much price must move to trail)
+  trailing_stop_initial_pct: 1.0   # ✅ Initial distance as % of ATR
 
 # AI Strategy Configuration
 ai_strategy:

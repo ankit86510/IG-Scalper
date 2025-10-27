@@ -7,6 +7,7 @@ Key changes:
 3. Added position exit logic
 4. Better error handling
 5. One position per symbol at a time
+6. AI Trading Bot with Trailing Stops
 """
 
 import os
@@ -26,6 +27,153 @@ from broker.ig_client import IGClient
 from broker.order_exec import enforce_market_rules, estimate_pip_value
 from strategy.ai_pattern_recognizer import AIPatternRecognizer
 from data.multi_data_provider import create_data_aggregator
+
+
+class TrailingStopManager:
+    """Manages manual trailing stops for all positions"""
+
+    def __init__(self, log):
+        self.log = log
+        self.trailing_stops = {}
+
+    def initialize(self, epic, entry_price, direction, stop_distance,
+                   activation_pct=0.3, trailing_pct=0.5):
+        """
+        Initialize trailing stop for new position
+
+        Args:
+            activation_pct: Profit % of stop needed to activate trailing (0.3 = 30%)
+            trailing_pct: % of move to keep as stop buffer (0.5 = 50%)
+        """
+        self.trailing_stops[epic] = {
+            'entry_price': entry_price,
+            'direction': direction,
+            'initial_stop_distance': stop_distance,
+            'current_stop_level': (entry_price - stop_distance if direction == 'BUY'
+                                   else entry_price + stop_distance),
+            'best_price': entry_price,
+            'trailing_pct': trailing_pct,
+            'activation_distance': stop_distance * activation_pct,
+            'active': False,
+            'total_trailed': 0.0
+        }
+
+        self.log.info(f"🎯 Trailing stop initialized:")
+        self.log.info(f"   Epic: {epic}")
+        self.log.info(f"   Entry: {entry_price:.2f}")
+        self.log.info(f"   Initial stop: {self.trailing_stops[epic]['current_stop_level']:.2f}")
+        self.log.info(f"   Will activate after {self.trailing_stops[epic]['activation_distance']:.2f} pts profit")
+
+    def update(self, epic, current_price):
+        """
+        Update trailing stop based on current price
+
+        Returns:
+            ('HIT', stop_level) if stop hit
+            ('TRAILED', new_stop_level) if stop was moved
+            (None, None) if no action
+        """
+        if epic not in self.trailing_stops:
+            return None, None
+
+        ts = self.trailing_stops[epic]
+        direction = ts['direction']
+
+        # Check if stop hit
+        if direction == 'BUY':
+            if current_price <= ts['current_stop_level']:
+                self.log.info(f"🛑 TRAILING STOP HIT: {epic}")
+                self.log.info(f"   Stop level: {ts['current_stop_level']:.2f}")
+                self.log.info(f"   Current price: {current_price:.2f}")
+                self.log.info(f"   Total profit protected: {current_price - ts['entry_price']:.2f} pts")
+                return 'HIT', ts['current_stop_level']
+        else:
+            if current_price >= ts['current_stop_level']:
+                self.log.info(f"🛑 TRAILING STOP HIT: {epic}")
+                self.log.info(f"   Stop level: {ts['current_stop_level']:.2f}")
+                self.log.info(f"   Current price: {current_price:.2f}")
+                self.log.info(f"   Total profit protected: {ts['entry_price'] - current_price:.2f} pts")
+                return 'HIT', ts['current_stop_level']
+
+        # Update best price and check for trailing
+        price_improved = False
+
+        if direction == 'BUY':
+            if current_price > ts['best_price']:
+                ts['best_price'] = current_price
+                price_improved = True
+        else:
+            if current_price < ts['best_price']:
+                ts['best_price'] = current_price
+                price_improved = True
+
+        if not price_improved:
+            return None, None
+
+        # Check if trailing should activate
+        if direction == 'BUY':
+            profit = current_price - ts['entry_price']
+        else:
+            profit = ts['entry_price'] - current_price
+
+        if not ts['active'] and profit >= ts['activation_distance']:
+            ts['active'] = True
+            self.log.info(f"✅ TRAILING ACTIVATED: {epic}")
+            self.log.info(f"   Profit: {profit:.2f} pts (threshold: {ts['activation_distance']:.2f})")
+
+        # Trail the stop if active
+        if ts['active']:
+            if direction == 'BUY':
+                # New stop = current price - (initial stop * trailing_pct)
+                new_stop = current_price - (ts['initial_stop_distance'] * ts['trailing_pct'])
+
+                if new_stop > ts['current_stop_level']:
+                    old_stop = ts['current_stop_level']
+                    trail_amount = new_stop - old_stop
+                    ts['current_stop_level'] = new_stop
+                    ts['total_trailed'] += trail_amount
+
+                    self.log.info(f"📈 STOP TRAILED: {epic}")
+                    self.log.info(f"   {old_stop:.2f} → {new_stop:.2f} (+{trail_amount:.2f})")
+                    self.log.info(f"   Current price: {current_price:.2f}")
+                    self.log.info(f"   Total trailed: {ts['total_trailed']:.2f} pts")
+
+                    return 'TRAILED', new_stop
+            else:
+                new_stop = current_price + (ts['initial_stop_distance'] * ts['trailing_pct'])
+
+                if new_stop < ts['current_stop_level']:
+                    old_stop = ts['current_stop_level']
+                    trail_amount = old_stop - new_stop
+                    ts['current_stop_level'] = new_stop
+                    ts['total_trailed'] += trail_amount
+
+                    self.log.info(f"📉 STOP TRAILED: {epic}")
+                    self.log.info(f"   {old_stop:.2f} → {new_stop:.2f} (-{trail_amount:.2f})")
+                    self.log.info(f"   Current price: {current_price:.2f}")
+                    self.log.info(f"   Total trailed: {ts['total_trailed']:.2f} pts")
+
+                    return 'TRAILED', new_stop
+
+        return None, None
+
+    def get_info(self, epic):
+        """Get trailing stop info for position"""
+        if epic not in self.trailing_stops:
+            return None
+
+        ts = self.trailing_stops[epic]
+        return {
+            'active': ts['active'],
+            'current_stop': ts['current_stop_level'],
+            'total_trailed': ts['total_trailed'],
+            'best_price': ts['best_price']
+        }
+
+    def remove(self, epic):
+        """Remove trailing stop"""
+        if epic in self.trailing_stops:
+            del self.trailing_stops[epic]
 
 
 class PositionManager:
@@ -61,32 +209,24 @@ class PositionManager:
         self.log.info(f"   Confidence: {confidence:.1%}")
 
     def check_exit_conditions(self, epic, current_price):
-        """
-        Check if position should be closed based on current price
-        Returns: ('EXIT', reason) or (None, None)
-        """
+        """Check if position should be closed (TP only, stops handled by trailing)"""
         if epic not in self.positions:
             return None, None
 
         pos = self.positions[epic]
-        direction = pos['direction']
 
-        # Check stop-loss hit
-        if direction == 'BUY':
-            if current_price <= pos['stop_level']:
-                return 'EXIT', 'STOP_LOSS'
+        # Only check take-profit (stops managed by trailing stop manager)
+        if pos['direction'] == 'BUY':
             if current_price >= pos['tp_level']:
                 return 'EXIT', 'TAKE_PROFIT'
-        else:  # SELL
-            if current_price >= pos['stop_level']:
-                return 'EXIT', 'STOP_LOSS'
+        else:
             if current_price <= pos['tp_level']:
                 return 'EXIT', 'TAKE_PROFIT'
 
         return None, None
 
     def remove_position(self, epic, exit_price=None, reason="CLOSED"):
-        """Remove position and calculate P&L"""
+        """Remove position and log to history"""
         if epic not in self.positions:
             return
 
@@ -187,7 +327,7 @@ def sync_positions_from_broker(ig, position_manager, log):
 
 def monitor_open_positions(ig, position_manager, data_aggregator, log):
     """
-    NEW: Monitor open positions and close if TP/SL hit
+    Monitor open positions with trailing stops
     """
     if not position_manager.positions:
         return
@@ -202,8 +342,33 @@ def monitor_open_positions(ig, position_manager, data_aggregator, log):
                 continue
 
             current_price = df['close'].iloc[-1]
+            pos = position_manager.positions[epic]
 
-            # Check exit conditions
+            # Update trailing stop
+            action, level = trailing_manager.update(epic, current_price)
+
+            if action == 'HIT':
+                # Trailing stop was hit - close position
+                log.info(f"🎯 Trailing stop hit for {epic}")
+
+                try:
+                    close_direction = "SELL" if pos['direction'] == 'BUY' else "BUY"
+                    resp = ig.close_position(
+                        deal_id=pos['deal_id'],
+                        direction=close_direction,
+                        size=pos['size']
+                    )
+
+                    log.info(f"✅ Position closed: {resp.get('dealReference')}")
+                    position_manager.remove_position(epic, current_price, "TRAILING_STOP")
+                    trailing_manager.remove(epic)
+
+                except Exception as e:
+                    log.error(f"❌ Failed to close {epic}: {e}")
+
+                continue
+
+            # Check take-profit (stops handled by trailing)
             should_exit, reason = position_manager.check_exit_conditions(epic, current_price)
 
             if should_exit:
@@ -223,17 +388,24 @@ def monitor_open_positions(ig, position_manager, data_aggregator, log):
 
                     log.info(f"✅ Position closed: {resp.get('dealReference')}")
                     position_manager.remove_position(epic, current_price, reason)
+                    trailing_manager.remove(epic)
 
                 except Exception as e:
                     log.error(f"❌ Failed to close {epic}: {e}")
             else:
-                # Just log current status
-                pos = position_manager.positions[epic]
-                pnl_pts = (current_price - pos['entry_price']) if pos['direction'] == 'BUY' else (
-                            pos['entry_price'] - current_price)
-                pnl_pts *= pos['size']
+                # Log current status
+                pnl_pts = ((current_price - pos['entry_price']) if pos['direction'] == 'BUY'
+                          else (pos['entry_price'] - current_price)) * pos['size']
 
-                log.info(f"  {epic}: {current_price:.2f} ({pnl_pts:+.2f} pts unrealized)")
+                # Get trailing stop info
+                ts_info = trailing_manager.get_info(epic)
+
+                if ts_info:
+                    log.info(f"  {epic}: {current_price:.2f} ({pnl_pts:+.2f} pts)")
+                    if ts_info['active']:
+                        log.info(f"    Trailing: Active | Stop @ {ts_info['current_stop']:.2f} | Trailed {ts_info['total_trailed']:.2f} pts")
+                    else:
+                        log.info(f"    Trailing: Waiting for activation")
 
         except Exception as e:
             log.error(f"Error monitoring {epic}: {e}")
@@ -262,7 +434,7 @@ def main():
     log = setup_logging(cfg["logging"]["level"], cfg["logging"]["sink"])
 
     log.info("=" * 80)
-    log.info("🤖 AI TRADING BOT - FIXED VERSION")
+    log.info("🤖 AI TRADING BOT WITH TRAILING STOPS")
     log.info("=" * 80)
 
     # Login to IG
@@ -293,9 +465,21 @@ def main():
     max_loss_pct = cfg["risk"]["max_loss_pct_invest"]
     max_daily_loss_pct = cfg["risk"]["max_daily_loss_pct"]
 
+    # Trailing stop config
+    use_trailing = cfg["execution"].get("use_trailing_stop", False)
+    trailing_activation_pct = cfg["execution"].get("trailing_activation_pct", 0.3)
+    trailing_distance_pct = cfg["execution"].get("trailing_distance_pct", 0.5)
+
     log.info(f"✓ Monitoring {len(epics)} instruments")
     log.info(f"✓ Timeframe: {timeframe}")
     log.info(f"✓ Risk per trade: £{invest} (max {max_loss_pct}% loss)")
+
+    if use_trailing:
+        log.info(f"✓ Trailing stops: ENABLED")
+        log.info(f"  - Activation: {trailing_activation_pct*100:.0f}% of stop profit")
+        log.info(f"  - Distance: {trailing_distance_pct*100:.0f}% of favorable move")
+    else:
+        log.info(f"✓ Trailing stops: DISABLED (fixed stops)")
 
     # Initialize AI Strategy
     ai_config = cfg.get("ai_strategy", {})
@@ -318,8 +502,9 @@ def main():
         except Exception as ex:
             log.error(f"✗ Failed to load {e}: {ex}")
 
-    # Initialize position manager
+    # Initialize managers
     position_manager = PositionManager(log)
+    trailing_manager = TrailingStopManager(log)
     last_bar_time = {e: None for e in epics}
 
     # Get starting equity
@@ -336,7 +521,7 @@ def main():
     last_report_time = time.time()
 
     log.info("=" * 80)
-    log.info("🚀 SYSTEM LIVE - Monitoring and trading...")
+    log.info("🚀 SYSTEM LIVE - Trading with trailing stops...")
     log.info("=" * 80)
 
     # Main trading loop
@@ -351,7 +536,7 @@ def main():
 
             # ✅ NEW: Monitor open positions every 5 loops (75 seconds)
             if loop_count % 5 == 0:
-                monitor_open_positions(ig, position_manager, aggregator, log)
+                monitor_open_positions(ig, position_manager, trailing_manager, aggregator, log)
 
             # Update P&L and sync every 10 loops
             if loop_count % 10 == 0:
@@ -454,16 +639,21 @@ def main():
                             log.warning(f"✗ Position size too small: {adj_size}")
                         else:
                             direction = "BUY" if signal["side"] == "BUY" else "SELL"
+                            current_price = df['close'].iloc[-1]
 
                             try:
                                 log.info(f"📤 PLACING ORDER: {epic} {direction}")
                                 log.info(f"   Size: {adj_size} | Stop: {stop_pts:.2f} | TP: {tp_pts:.2f}")
 
+                                if use_trailing:
+                                    log.info(f"   Trailing: Will activate after {stop_pts * trailing_activation_pct:.2f} pts profit")
+
+                                # Place order (NO stop if using manual trailing)
                                 resp = ig.place_order(
                                     epic,
                                     direction,
                                     adj_size,
-                                    stop_distance=stop_pts,
+                                    stop_distance=None if use_trailing else stop_pts,
                                     limit_distance=tp_pts,
                                     tif=cfg["execution"]["time_in_force"]
                                 )
@@ -486,6 +676,17 @@ def main():
                                     confidence=confidence,
                                     patterns=patterns
                                 )
+
+                                # Initialize trailing stop
+                                if use_trailing:
+                                    trailing_manager.initialize(
+                                        epic=epic,
+                                        entry_price=current_price,
+                                        direction=direction,
+                                        stop_distance=stop_pts,
+                                        activation_pct=trailing_activation_pct,
+                                        trailing_pct=trailing_distance_pct
+                                    )
 
                             except Exception as e:
                                 log.exception(f"❌ ORDER FAILED {epic}: {e}")
