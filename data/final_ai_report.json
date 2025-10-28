@@ -1,143 +1,15 @@
 {
-  "generated_at": "2025-10-27T09:34:01.472651+00:00",
+  "generated_at": "2025-10-27T17:54:06.756200+00:00",
   "performance": {
-    "total_trades": 5,
-    "completed": 0
+    "total_trades": 0
   },
-  "recent_trades": [
-    {
-      "deal_id": "MARL626MD5JTZDZ",
-      "direction": "SELL",
-      "size": 13.3,
-      "entry_price": 4073.60009765625,
-      "entry_time": "2025-10-27T08:44:48.490562+00:00",
-      "stop_distance": 3.7606985909598216,
-      "tp_distance": 7.521397181919643,
-      "stop_level": 4077.3607962472097,
-      "tp_level": 4066.07870047433,
-      "confidence": 0.46468694135799204,
-      "patterns": [],
-      "status": "BROKER_CLOSED",
-      "exit_time": "2025-10-27T08:53:35.166105+00:00",
-      "exit_price": null
-    },
-    {
-      "deal_id": "7ZBG2SB3FY2TZDZ",
-      "direction": "SELL",
-      "size": 16.1,
-      "entry_price": 4073.0,
-      "entry_time": "2025-10-27T08:54:35.656272+00:00",
-      "stop_distance": 3.0964442661830356,
-      "tp_distance": 6.192888532366071,
-      "stop_level": 4076.096444266183,
-      "tp_level": 4066.807111467634,
-      "confidence": 0.3392541996881321,
-      "patterns": [],
-      "status": "BROKER_CLOSED",
-      "exit_time": "2025-10-27T08:56:06.586165+00:00",
-      "exit_price": null
-    },
-    {
-      "deal_id": "CABJH8LSM22TZDZ",
-      "direction": "SELL",
-      "size": 20.0,
-      "entry_price": 4040.0,
-      "entry_time": "2025-10-27T08:56:06.679382+00:00",
-      "stop_distance": 2.5007436955713684,
-      "tp_distance": 5.001487391142737,
-      "stop_level": 4042.500743695571,
-      "tp_level": 4034.9985126088573,
-      "confidence": 0.5722578132913465,
-      "patterns": [],
-      "status": "BROKER_CLOSED",
-      "exit_time": "2025-10-27T08:58:37.503778+00:00",
-      "exit_price": null
-    },
-    {
-      "deal_id": "KATNX878ECNTZDZ",
-      "direction": "BUY",
-      "size": 16.3,
-      "entry_price": 4072.10009765625,
-      "entry_time": "2025-10-27T08:58:37.633002+00:00",
-      "stop_distance": 3.0750209263392856,
-      "tp_distance": 6.150041852678571,
-      "stop_level": 4069.025076729911,
-      "tp_level": 4078.2501395089284,
-      "confidence": 0.31922899575015756,
-      "patterns": [
-        "SYMMETRICAL_TRIANGLE"
-      ],
-      "status": "BROKER_CLOSED",
-      "exit_time": "2025-10-27T09:01:08.086977+00:00",
-      "exit_price": null
-    },
-    {
-      "deal_id": "QU4C6FUR7N6TZDZ",
-      "direction": "SELL",
-      "size": 14.8,
-      "entry_price": 4069.89990234375,
-      "entry_time": "2025-10-27T09:01:08.194663+00:00",
-      "stop_distance": 3.3750261579241077,
-      "tp_distance": 6.750052315848215,
-      "stop_level": 4073.274928501674,
-      "tp_level": 4063.1498500279017,
-      "confidence": 0.3277423960426481,
-      "patterns": [
-        "DOJI"
-      ],
-      "status": "BROKER_CLOSED",
-      "exit_time": "2025-10-27T09:08:40.954267+00:00",
-      "exit_price": null
-    }
-  ],
+  "recent_trades": [],
   "decision_log": [
     {
-      "timestamp": "2025-10-27T08:43:47.934119+00:00",
+      "timestamp": "2025-10-27T17:41:36.932120+00:00",
       "epic": "CS.D.CFEGOLD.CEB.IP",
       "signal": true,
-      "confidence": 0.4536483662929902
-    },
-    {
-      "timestamp": "2025-10-27T08:44:48.270198+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.46468694135799204
-    },
-    {
-      "timestamp": "2025-10-27T08:53:35.181105+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.36292881029383195
-    },
-    {
-      "timestamp": "2025-10-27T08:54:35.425581+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.3392541996881321
-    },
-    {
-      "timestamp": "2025-10-27T08:56:06.604269+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.5722578132913465
-    },
-    {
-      "timestamp": "2025-10-27T08:58:37.519763+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.31922899575015756
-    },
-    {
-      "timestamp": "2025-10-27T09:01:08.103938+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.3277423960426481
-    },
-    {
-      "timestamp": "2025-10-27T09:08:40.982494+00:00",
-      "epic": "CS.D.CFEGOLD.CEB.IP",
-      "signal": true,
-      "confidence": 0.5790968482638819
+      "confidence": 0.5718535606945125
     }
   ]
 }

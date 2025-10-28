@@ -325,7 +325,7 @@ def sync_positions_from_broker(ig, position_manager, log):
         return {}
 
 
-def monitor_open_positions(ig, position_manager, data_aggregator, log):
+def monitor_open_positions(ig, position_manager, trailing_manager, data_aggregator, log):
     """
     Monitor open positions with trailing stops
     """
