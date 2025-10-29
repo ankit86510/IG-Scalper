@@ -25,14 +25,13 @@ risk:
 
 execution:
   time_in_force: "FILL_OR_KILL"
-  use_trailing_stop: true          # ✅ Enable this
-  trailing_stop_increment: 0.5     # ✅ Add this (how much price must move to trail)
-  trailing_stop_initial_pct: 1.0   # ✅ Initial distance as % of ATR
+  use_trailing_stop: true           # ✅ Enable trailing
+  trailing_activation_pct: 0.3      # Activate after 30% of stop profit
+  trailing_distance_pct: 0.5        # Keep 50% buffer
 
-# AI Strategy Configuration
 ai_strategy:
-  confidence_threshold: 0.30   # Was 0.65 - lowered for CFD sensitivity
-  lookback_candles: 50
+  confidence_threshold: 0.30
+  enable_sr_detection: true         # ✅ Enable S/R detection
 
   # NEW: CFD-specific settings
   cfd_mode: true                    # Enable CFD optimizations

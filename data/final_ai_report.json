@@ -1,15 +1,159 @@
 {
-  "generated_at": "2025-10-27T17:54:06.756200+00:00",
+  "generated_at": "2025-10-29T08:32:25.488410+00:00",
   "performance": {
-    "total_trades": 0
+    "total_trades": 6,
+    "completed": 0
   },
-  "recent_trades": [],
+  "recent_trades": [
+    {
+      "deal_id": "DZAAHLS75P2TZDZ",
+      "direction": "SELL",
+      "size": 8.6,
+      "entry_price": 3968.10009765625,
+      "entry_time": "2025-10-28T22:04:29.531755+00:00",
+      "stop_distance": 5.768248779296755,
+      "tp_distance": 6.921898535156106,
+      "stop_level": 3973.8683464355468,
+      "tp_level": 3961.1781991210937,
+      "confidence": 0.4038364374536579,
+      "patterns": [],
+      "status": "BROKER_CLOSED",
+      "exit_time": "2025-10-28T22:09:15.745940+00:00",
+      "exit_price": null
+    },
+    {
+      "deal_id": "MRJG32VLEJJTZDZ",
+      "direction": "SELL",
+      "size": 9.5,
+      "entry_price": 3970.10009765625,
+      "entry_time": "2025-10-28T22:10:16.014655+00:00",
+      "stop_distance": 5.238942301431962,
+      "tp_distance": 6.286730761718354,
+      "stop_level": 3975.339039957682,
+      "tp_level": 3963.8133668945316,
+      "confidence": 0.403336575529113,
+      "patterns": [],
+      "status": "BROKER_CLOSED",
+      "exit_time": "2025-10-28T22:11:46.366762+00:00",
+      "exit_price": null
+    },
+    {
+      "deal_id": "KLTU2V2AUJNTZDZ",
+      "direction": "BUY",
+      "size": 7.2,
+      "entry_price": 3972.5,
+      "entry_time": "2025-10-28T22:11:46.493338+00:00",
+      "stop_distance": 6.972999999999956,
+      "tp_distance": 8.367599999999948,
+      "stop_level": 3965.527,
+      "tp_level": 3980.8676,
+      "confidence": 0.4013398858311846,
+      "patterns": [],
+      "status": "BROKER_CLOSED",
+      "exit_time": "2025-10-28T22:21:49.966909+00:00",
+      "exit_price": null
+    },
+    {
+      "deal_id": "38TGBQD8ZASTZDZ",
+      "direction": "SELL",
+      "size": 7.0,
+      "entry_price": 3956.10009765625,
+      "entry_time": "2025-10-28T22:21:50.089928+00:00",
+      "stop_distance": 7.156751220702972,
+      "tp_distance": 8.588101464843566,
+      "stop_level": 3963.256848876953,
+      "tp_level": 3947.5119961914065,
+      "confidence": 0.4864443772521301,
+      "patterns": [],
+      "status": "BROKER_CLOSED",
+      "exit_time": "2025-10-28T22:29:21.669810+00:00",
+      "exit_price": null
+    },
+    {
+      "deal_id": "PEZSGUW2BCATZDZ",
+      "direction": "SELL",
+      "size": 5.0,
+      "entry_price": 3956.39990234375,
+      "entry_time": "2025-10-28T22:29:21.789244+00:00",
+      "stop_distance": 9.954000000000178,
+      "tp_distance": 11.944800000000214,
+      "stop_level": 3966.35390234375,
+      "tp_level": 3944.45510234375,
+      "confidence": 0.7378464930836814,
+      "patterns": [
+        "ENGULFING"
+      ],
+      "status": "BROKER_CLOSED",
+      "exit_time": "2025-10-28T22:47:10.463461+00:00",
+      "exit_price": null
+    },
+    {
+      "deal_id": "PUUKY6YSZYATZDZ",
+      "direction": "SELL",
+      "size": 6.2,
+      "entry_price": 3956.699951171875,
+      "entry_time": "2025-10-28T22:47:10.544459+00:00",
+      "stop_distance": 8.055997558593845,
+      "tp_distance": 9.667197070312612,
+      "stop_level": 3964.755948730469,
+      "tp_level": 3947.032754101562,
+      "confidence": 0.39478730950051955,
+      "patterns": [
+        "SHOOTING_STAR"
+      ],
+      "status": "BROKER_CLOSED",
+      "exit_time": "2025-10-28T23:09:45.946562+00:00",
+      "exit_price": null
+    }
+  ],
   "decision_log": [
     {
-      "timestamp": "2025-10-27T17:41:36.932120+00:00",
+      "timestamp": "2025-10-28T22:04:29.416598+00:00",
       "epic": "CS.D.CFEGOLD.CEB.IP",
       "signal": true,
-      "confidence": 0.5718535606945125
+      "confidence": 0.4038364374536579
+    },
+    {
+      "timestamp": "2025-10-28T22:10:15.905557+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.403336575529113
+    },
+    {
+      "timestamp": "2025-10-28T22:11:46.383475+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.4013398858311846
+    },
+    {
+      "timestamp": "2025-10-28T22:21:49.986908+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.4864443772521301
+    },
+    {
+      "timestamp": "2025-10-28T22:29:21.684811+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.7378464930836814
+    },
+    {
+      "timestamp": "2025-10-28T22:47:10.475460+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.39478730950051955
+    },
+    {
+      "timestamp": "2025-10-28T23:09:45.979299+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.519135029781727
+    },
+    {
+      "timestamp": "2025-10-28T23:10:46.282647+00:00",
+      "epic": "CS.D.CFEGOLD.CEB.IP",
+      "signal": true,
+      "confidence": 0.41390669503764216
     }
   ]
 }
