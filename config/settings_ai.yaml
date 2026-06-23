@@ -40,7 +40,7 @@ execution:
   trailing_distance_pct: 0.5        # Keep 50% buffer
 
 ai_strategy:
-  confidence_threshold: 0.30
+  confidence_threshold: 0.55
   enable_sr_detection: true         # ✅ Enable S/R detection
 
   # NEW: CFD-specific settings
@@ -50,7 +50,7 @@ ai_strategy:
 
   # Risk management — tuned for 5min bars
   atr_period: 14               # ATR period (14 x 5min = 70min lookback)
-  stop_multiplier: 1.5         # Stop loss = ATR * multiplier
+  stop_multiplier: 2.0         # Stop loss = ATR * multiplier (wider stops = less noise)
   rr_take: 2.0                 # Risk/Reward ratio (1:2 means 2x profit target)
   lookback_candles: 200        # AI needs 200 bars minimum (TwelveData free max is 250)
 
@@ -65,6 +65,9 @@ ai_strategy:
   enable_pattern_confluence: true    # Require multiple patterns
   min_patterns_for_trade: 2          # Minimum patterns needed
   use_sentiment_analysis: false      # Reserved for future ML integration
+
+  # Anti-churn: cooldown after stop loss (seconds)
+  cooldown_after_sl: 600             # Wait 10 minutes after SL before new trade
 
 # Data Source Priority
 # System will try sources in this order

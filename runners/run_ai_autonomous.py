@@ -637,6 +637,8 @@ def main():
     daily_pnl_pct = 0.0
     loop_count = 0
     last_report_time = time.time()
+    last_sl_time = {}  # Track last stop loss time per epic for cooldown
+    cooldown_after_sl = ai_config.get("cooldown_after_sl", 600)  # Default 10 min
 
     log.info("=" * 80)
     log.info("🚀 SYSTEM LIVE - Trading with fixed trailing stops...")
@@ -652,7 +654,15 @@ def main():
                 break
 
             # Sync positions from broker every loop, BEFORE epic processing
+            positions_before_sync = set(position_manager.positions.keys())
             broker_positions = sync_positions_from_broker(ig, position_manager, log)
+            positions_after_sync = set(position_manager.positions.keys())
+
+            # Track cooldown for positions closed by broker (SL hit)
+            closed_by_broker = positions_before_sync - positions_after_sync
+            for epic in closed_by_broker:
+                last_sl_time[epic] = time.time()
+                log.info(f"⏸️ Cooldown started for {epic} ({cooldown_after_sl}s)")
 
             # Initialize trailing stops for positions restored from broker (e.g., after restart)
             if use_trailing and broker_positions:
@@ -722,6 +732,14 @@ def main():
                     if epic in position_manager.positions:
                         log.info(f"⏭️ Skipping {epic} - position already open")
                         continue
+
+                    # Cooldown after stop loss — prevent re-entry too quickly
+                    if epic in last_sl_time:
+                        elapsed = time.time() - last_sl_time[epic]
+                        if elapsed < cooldown_after_sl:
+                            remaining = int(cooldown_after_sl - elapsed)
+                            log.info(f"⏸️ Cooldown {epic} - {remaining}s remaining after SL")
+                            continue
 
                     df = aggregator.get_bars(epic, timeframe, limit=250)
 
