@@ -254,13 +254,18 @@ class PositionManager:
             return None, None
 
         pos = self.positions[epic]
+        tp_level = pos.get('tp_level')
+
+        # Skip TP check if no level set (e.g., restored from broker without limit)
+        if tp_level is None:
+            return None, None
 
         # Check take-profit
         if pos['direction'] == 'BUY':
-            if current_price >= pos['tp_level']:
+            if current_price >= tp_level:
                 return 'EXIT', 'TAKE_PROFIT'
         else:
-            if current_price <= pos['tp_level']:
+            if current_price <= tp_level:
                 return 'EXIT', 'TAKE_PROFIT'
 
         return None, None
