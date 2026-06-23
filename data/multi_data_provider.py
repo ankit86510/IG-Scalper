@@ -410,6 +410,96 @@ class AlphaVantageProvider:
             return pd.DataFrame()
 
 
+class IGPriceProvider:
+    """Primary price provider using IG REST API /prices endpoint.
+
+    Rate limits (Demo):
+    - 30 non-trading requests per minute (shared with /markets, /positions)
+    - 10,000 historical price requests per week
+    - We budget conservatively: max 15 /prices calls per minute
+
+    Resolution mapping:
+    - 1min  -> MINUTE
+    - 5min  -> MINUTE_5
+    - 15min -> MINUTE_15
+    - 60min -> HOUR
+    - 1day  -> DAY
+    """
+
+    RESOLUTION_MAP = {
+        "1min": "MINUTE",
+        "3min": "MINUTE_3",
+        "5min": "MINUTE_5",
+        "15min": "MINUTE_15",
+        "30min": "MINUTE_30",
+        "60min": "HOUR",
+        "1h": "HOUR",
+        "4h": "HOUR_4",
+        "1day": "DAY",
+    }
+
+    MAX_BARS = {
+        "MINUTE": 200,
+        "MINUTE_3": 200,
+        "MINUTE_5": 200,
+        "MINUTE_15": 200,
+        "MINUTE_30": 200,
+        "HOUR": 200,
+        "HOUR_4": 200,
+        "DAY": 500,
+    }
+
+    def __init__(self, ig_client):
+        self.ig_client = ig_client
+        self._request_times = []
+        self._max_per_minute = 15  # Conservative: 15 of 30 allowed/min
+        self._weekly_count = 0
+
+    def _check_rate_limit(self) -> bool:
+        """Check if we can make another request within rate limits."""
+        now = time.time()
+        self._request_times = [ts for ts in self._request_times if now - ts < 60]
+        return len(self._request_times) < self._max_per_minute
+
+    def _record_request(self):
+        """Record a request timestamp."""
+        self._request_times.append(time.time())
+        self._weekly_count += 1
+
+    def get_bars(self, symbol: str, timeframe: str = "5min", limit: int = 200) -> pd.DataFrame:
+        """Fetch OHLC bars from IG /prices endpoint.
+
+        Args:
+            symbol: IG epic (e.g., "CS.D.CFEGOLD.CEB.IP")
+            timeframe: Candle interval (e.g., "5min", "15min", "60min")
+            limit: Number of bars to fetch (max 200 for intraday)
+
+        Returns:
+            DataFrame with open, high, low, close, volume columns and datetime index.
+        """
+        from data.ig_price_bars import bars_from_ig
+
+        if not self._check_rate_limit():
+            log_warning(logger, f"IG rate limit reached ({self._max_per_minute}/min), skipping")
+            return pd.DataFrame()
+
+        resolution = self.RESOLUTION_MAP.get(timeframe, "MINUTE_5")
+        max_bars = min(limit, self.MAX_BARS.get(resolution, 200))
+
+        try:
+            self._record_request()
+            prices = self.ig_client.get_prices(symbol, resolution=resolution, max=max_bars)
+            df = bars_from_ig(prices, epic=symbol)
+
+            if not df.empty:
+                safe_log(logger, 'info', f"IG Prices: {len(df)} bars ({timeframe}) for {symbol}")
+
+            return df
+
+        except Exception as e:
+            log_error(logger, f"IG Prices error for {symbol}: {e}")
+            return pd.DataFrame()
+
 
 class SmartDataAggregator:
     def __init__(self, config: Dict, ig_client=None):
@@ -434,7 +524,12 @@ class SmartDataAggregator:
         # Lightstreamer NOT used as data provider — TwelveData/IG REST are primary.
         # Lightstreamer module remains available for live tick monitoring separately.
 
-        # TwelveData — primary source, spot prices for all asset classes
+        # IG REST API — primary source (no external dependency, direct from broker)
+        if ig_client:
+            self.providers.append(("IG", IGPriceProvider(ig_client)))
+            log_success(logger, "IG Price provider initialized (direct broker data, priority 0)")
+
+        # TwelveData — secondary source, spot prices for all asset classes
         if config.get("twelve_data_key"):
             self.providers.append(("TwelveData", TwelveDataProvider(config["twelve_data_key"])))
             log_success(logger, "TwelveData provider initialized (spot prices, priority 1)")
@@ -455,54 +550,60 @@ class SmartDataAggregator:
     def _build_symbol_map(self) -> Dict:
         return {
             # Gold spot CFD — GC=F on Yahoo is futures (basis spread ~$10-30).
-            # Use TwelveData XAU/USD (spot) or IG API directly.
+            # Use IG directly (primary) or TwelveData XAU/USD (spot).
             # Yahoo Finance intentionally excluded for this instrument.
             "CS.D.CFEGOLD.CEB.IP": {
+                "IG": "CS.D.CFEGOLD.CEB.IP",
                 "TwelveData": "XAU/USD",
                 "AlphaVantage": "XAUUSD",
-                # No YahooFinance entry: GC=F is futures, not spot
             },
 
             # Crude Oil spot CFD — CL=F on Yahoo is futures, exclude it.
             "CMD.USCrude.CFD.IP": {
+                "IG": "CMD.USCrude.CFD.IP",
                 "TwelveData": "WTI/USD",
                 "AlphaVantage": "USOIL",
-                # No YahooFinance entry: CL=F is futures
             },
 
             # Silver spot CFD
             "CS.D.CFESILVER.CEB.IP": {
+                "IG": "CS.D.CFESILVER.CEB.IP",
                 "TwelveData": "XAG/USD",
-                # No YahooFinance entry: SI=F is futures
             },
 
             # Indices — Yahoo Finance cash index prices are spot-equivalent, OK to use
             "IX.D.SPTRD.DAILY.IP": {
+                "IG": "IX.D.SPTRD.DAILY.IP",
                 "TwelveData": "SPX",
                 "YahooFinance": "^GSPC",
                 "AlphaVantage": "SPX"
             },
             "IX.D.FTSE.CFD.IP": {
+                "IG": "IX.D.FTSE.CFD.IP",
                 "TwelveData": "UK100",
                 "YahooFinance": "^FTSE",
             },
             "IX.D.DAX.CFD.IP": {
+                "IG": "IX.D.DAX.CFD.IP",
                 "TwelveData": "GER40",
                 "YahooFinance": "^GDAXI",
             },
 
             # Forex — Yahoo =X suffix is spot rate, matches IG CFD price closely
             "CS.D.EURUSD.CFD.IP": {
+                "IG": "CS.D.EURUSD.CFD.IP",
                 "TwelveData": "EUR/USD",
                 "YahooFinance": "EURUSD=X",
                 "AlphaVantage": "EURUSD"
             },
             "CS.D.GBPUSD.CFD.IP": {
+                "IG": "CS.D.GBPUSD.CFD.IP",
                 "TwelveData": "GBP/USD",
                 "YahooFinance": "GBPUSD=X",
                 "AlphaVantage": "GBPUSD"
             },
             "CS.D.USDJPY.CFD.IP": {
+                "IG": "CS.D.USDJPY.CFD.IP",
                 "TwelveData": "USD/JPY",
                 "YahooFinance": "USDJPY=X",
                 "AlphaVantage": "USDJPY"
@@ -676,34 +777,8 @@ class SmartDataAggregator:
                 safe_log(logger, 'debug', traceback.format_exc())
                 continue
 
-        # IG Fallback
+        # All providers exhausted (IG is now in the main provider chain)
         self.fetch_stats["failed_fetches"] += 1
-
-        if self.ig_client:
-            log_warning(logger, "All external providers failed, trying IG API...")
-
-            try:
-                from data.ig_price_bars import bars_from_ig
-
-                resolution_map = {
-                    "1min": "MINUTE",
-                    "3min": "MINUTE_3",
-                    "5min": "MINUTE_5",
-                    "15min": "MINUTE_15"
-                }
-
-                resolution = resolution_map.get(timeframe, "MINUTE_5")
-                prices = self.ig_client.get_prices(ig_epic, resolution=resolution, max=limit)
-                df = bars_from_ig(prices)
-
-                if not df.empty:
-                    self.fetch_stats["successful_fetches"] += 1
-                    log_success(logger, f"Data from IG API: {len(df)} bars")
-                    return df
-
-            except Exception as e:
-                log_error(logger, f"IG API fallback failed: {e}")
-
         log_error(logger, f"All data sources exhausted for {ig_epic}")
         return pd.DataFrame()
 
