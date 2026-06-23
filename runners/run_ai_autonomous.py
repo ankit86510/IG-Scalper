@@ -303,7 +303,7 @@ class PositionManager:
 
 
 def sync_positions_from_broker(ig, position_manager, log):
-    """Sync positions from broker"""
+    """Sync positions from broker — adds missing positions and removes stale ones."""
     try:
         positions_data = ig.positions()
         broker_positions = {}
@@ -319,12 +319,36 @@ def sync_positions_from_broker(ig, position_manager, log):
                 'direction': position.get('direction'),
                 'size': position.get('size'),
                 'open_level': position.get('level'),
+                'stop_level': position.get('stopLevel'),
+                'limit_level': position.get('limitLevel'),
             }
 
+        # Remove locally-tracked positions that no longer exist at broker
         for epic in list(position_manager.positions.keys()):
             if epic not in broker_positions:
                 position_manager.remove_position(epic, reason="BROKER_CLOSED")
                 log.info(f"Position {epic} removed - closed at broker")
+
+        # Add broker positions that aren't tracked locally (e.g., after restart)
+        for epic, bp in broker_positions.items():
+            if epic not in position_manager.positions:
+                position_manager.positions[epic] = {
+                    'deal_id': bp['deal_id'],
+                    'direction': bp['direction'],
+                    'size': bp['size'],
+                    'entry_price': bp['open_level'],
+                    'entry_time': datetime.now(UTC).isoformat(),
+                    'stop_distance': 0,
+                    'tp_distance': 0,
+                    'stop_level': bp.get('stop_level'),
+                    'tp_level': bp.get('limit_level'),
+                    'confidence': 0,
+                    'patterns': [],
+                    'status': 'OPEN',
+                }
+                log.info(f"📥 Restored position from broker: {epic} "
+                         f"{bp['direction']} @ {bp['open_level']} "
+                         f"(dealId: {bp['deal_id']})")
 
         log.info(f"✓ Synced {len(broker_positions)} positions")
         return broker_positions
@@ -582,7 +606,26 @@ def main():
                 break
 
             # Sync positions from broker every loop, BEFORE epic processing
-            sync_positions_from_broker(ig, position_manager, log)
+            broker_positions = sync_positions_from_broker(ig, position_manager, log)
+
+            # Initialize trailing stops for positions restored from broker (e.g., after restart)
+            if use_trailing and broker_positions:
+                for epic, bp in broker_positions.items():
+                    if epic in position_manager.positions and epic not in trailing_manager.trailing_stops:
+                        pos = position_manager.positions[epic]
+                        stop_level = bp.get('stop_level')
+                        entry = bp.get('open_level', pos.get('entry_price', 0))
+                        if stop_level and entry:
+                            stop_distance = abs(entry - stop_level)
+                            trailing_manager.initialize(
+                                epic=epic,
+                                deal_id=bp['deal_id'],
+                                entry_price=entry,
+                                direction=bp['direction'],
+                                stop_distance=stop_distance,
+                                activation_pct=trailing_activation_pct,
+                                trailing_pct=trailing_distance_pct
+                            )
 
             # Monitor open positions every loop (no-op when no positions exist)
             monitor_open_positions(ig, position_manager, trailing_manager, aggregator, log)
