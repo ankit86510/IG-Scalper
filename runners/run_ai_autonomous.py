@@ -194,13 +194,36 @@ class TrailingStopManager:
 
 
 class PositionManager:
-    """Position management with monitoring"""
+    """Position management with monitoring and persistent trade history"""
+
+    TRADE_HISTORY_FILE = "data/trade_history.json"
 
     def __init__(self, log):
         self.log = log
         self.positions = {}
-        self.trade_history = []
+        self.trade_history = self._load_trade_history()
         self.decision_log = []
+
+    def _load_trade_history(self):
+        """Load trade history from disk."""
+        try:
+            import json
+            with open(self.TRADE_HISTORY_FILE, 'r') as f:
+                history = json.load(f)
+                self.log.info(f"📂 Loaded {len(history)} trades from history")
+                return history
+        except (FileNotFoundError, json.JSONDecodeError):
+            return []
+
+    def _save_trade_history(self):
+        """Persist trade history to disk."""
+        try:
+            import json
+            os.makedirs(os.path.dirname(self.TRADE_HISTORY_FILE), exist_ok=True)
+            with open(self.TRADE_HISTORY_FILE, 'w') as f:
+                json.dump(self.trade_history, f, indent=2, default=str)
+        except Exception as e:
+            self.log.error(f"Failed to save trade history: {e}")
 
     def add_position(self, epic, deal_id, direction, size, entry_price, stop, tp, confidence, patterns):
         """Track new position"""
@@ -269,36 +292,54 @@ class PositionManager:
             self.log.info(f"📊 Closed {epic}: {pnl_pts:+.2f} pts in {duration:.1f} min ({reason})")
 
         self.trade_history.append(pos)
+        self._save_trade_history()
         del self.positions[epic]
 
     def get_performance_stats(self):
-        """Calculate performance statistics"""
-        if not self.trade_history:
-            return {"total_trades": 0}
+        """Calculate performance statistics for today and all-time."""
+        from zoneinfo import ZoneInfo
+        rome_tz = ZoneInfo("Europe/Rome")
+        today_str = datetime.now(rome_tz).strftime("%Y-%m-%d")
 
+        # All completed trades
         completed = [t for t in self.trade_history if 'pnl_pts' in t]
-        if not completed:
-            return {"total_trades": len(self.trade_history), "completed": 0}
 
-        wins = [t for t in completed if t['pnl_pts'] > 0]
-        losses = [t for t in completed if t['pnl_pts'] <= 0]
+        # Today's trades (by exit_time in Rome timezone)
+        today_trades = []
+        for t in completed:
+            try:
+                from dateutil import parser
+                exit_dt = parser.parse(t['exit_time'])
+                if exit_dt.astimezone(rome_tz).strftime("%Y-%m-%d") == today_str:
+                    today_trades.append(t)
+            except (KeyError, ValueError, TypeError):
+                continue
 
-        total_pnl = sum(t['pnl_pts'] for t in completed)
-        win_rate = len(wins) / len(completed) * 100 if completed else 0
-
-        avg_win = sum(t['pnl_pts'] for t in wins) / len(wins) if wins else 0
-        avg_loss = sum(t['pnl_pts'] for t in losses) / len(losses) if losses else 0
+        def calc_stats(trades):
+            if not trades:
+                return {"completed": 0, "wins": 0, "losses": 0, "win_rate": 0,
+                        "total_pnl_pts": 0, "avg_win_pts": 0, "avg_loss_pts": 0, "profit_factor": 0}
+            wins = [t for t in trades if t['pnl_pts'] > 0]
+            losses = [t for t in trades if t['pnl_pts'] <= 0]
+            total_pnl = sum(t['pnl_pts'] for t in trades)
+            win_rate = len(wins) / len(trades) * 100 if trades else 0
+            avg_win = sum(t['pnl_pts'] for t in wins) / len(wins) if wins else 0
+            avg_loss = sum(t['pnl_pts'] for t in losses) / len(losses) if losses else 0
+            return {
+                "completed": len(trades),
+                "wins": len(wins),
+                "losses": len(losses),
+                "win_rate": win_rate,
+                "total_pnl_pts": total_pnl,
+                "avg_win_pts": avg_win,
+                "avg_loss_pts": avg_loss,
+                "profit_factor": abs(avg_win / avg_loss) if avg_loss != 0 else 0,
+            }
 
         return {
             "total_trades": len(self.trade_history),
-            "completed": len(completed),
-            "wins": len(wins),
-            "losses": len(losses),
-            "win_rate": win_rate,
-            "total_pnl_pts": total_pnl,
-            "avg_win_pts": avg_win,
-            "avg_loss_pts": avg_loss,
-            "profit_factor": abs(avg_win / avg_loss) if avg_loss != 0 else 0
+            "today": calc_stats(today_trades),
+            "alltime": calc_stats(completed),
         }
 
 
@@ -643,10 +684,20 @@ def main():
             # Periodic reporting
             if time.time() - last_report_time > 300:
                 stats = position_manager.get_performance_stats()
+                today = stats.get('today', {})
+                alltime = stats.get('alltime', {})
+
                 log.info("=" * 80)
                 log.info(f"📊 PERFORMANCE UPDATE")
-                log.info(f"  Trades: {stats.get('completed', 0)} | Win Rate: {stats.get('win_rate', 0):.1f}%")
-                log.info(f"  Total P&L: {stats.get('total_pnl_pts', 0):+.2f} pts")
+                log.info(f"  TODAY: {today.get('completed', 0)} trades | "
+                         f"Win Rate: {today.get('win_rate', 0):.1f}% | "
+                         f"P&L: {today.get('total_pnl_pts', 0):+.2f} pts")
+                if today.get('completed', 0) > 0:
+                    log.info(f"    Wins: {today.get('wins', 0)} ({today.get('avg_win_pts', 0):+.2f} avg) | "
+                             f"Losses: {today.get('losses', 0)} ({today.get('avg_loss_pts', 0):+.2f} avg)")
+                log.info(f"  ALL-TIME: {alltime.get('completed', 0)} trades | "
+                         f"Win Rate: {alltime.get('win_rate', 0):.1f}% | "
+                         f"P&L: {alltime.get('total_pnl_pts', 0):+.2f} pts")
                 log.info(f"  Open Positions: {len(position_manager.positions)}")
                 log.info("=" * 80)
 
