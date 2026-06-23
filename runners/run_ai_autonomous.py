@@ -350,7 +350,7 @@ def sync_positions_from_broker(ig, position_manager, log):
 
 
 def monitor_open_positions(ig, position_manager, trailing_manager, data_aggregator, log):
-    """Monitor open positions with trailing stops"""
+    """Monitor open positions with trailing stops using live IG price data"""
     if not position_manager.positions:
         return
 
@@ -358,11 +358,30 @@ def monitor_open_positions(ig, position_manager, trailing_manager, data_aggregat
 
     for epic in list(position_manager.positions.keys()):
         try:
-            df = data_aggregator.get_bars(epic, timeframe="1min", limit=250)
-            if df.empty:
-                continue
+            # Use IG market prices for real-time data (not cached bar data)
+            try:
+                market = ig.market_details(epic)
+                bid = market.get('snapshot', {}).get('bid')
+                offer = market.get('snapshot', {}).get('offer')
+                pos = position_manager.positions[epic]
 
-            current_price = df['close'].iloc[-1]
+                if bid and offer:
+                    # Use bid for SELL positions (closing a SELL = buying at offer)
+                    # Use offer for BUY positions (closing a BUY = selling at bid)
+                    current_price = float(bid) if pos['direction'] == 'BUY' else float(offer)
+                else:
+                    # Fallback to bar data if market snapshot unavailable
+                    df = data_aggregator.get_bars(epic, timeframe="1min", limit=250)
+                    if df is None or df.empty:
+                        continue
+                    current_price = df['close'].iloc[-1]
+            except Exception as e:
+                # Fallback to bar data
+                df = data_aggregator.get_bars(epic, timeframe="1min", limit=250)
+                if df is None or df.empty:
+                    continue
+                current_price = df['close'].iloc[-1]
+
             pos = position_manager.positions[epic]
 
             # Update trailing stop
@@ -413,16 +432,16 @@ def monitor_open_positions(ig, position_manager, trailing_manager, data_aggregat
                     log.error(f"❌ Failed to close {epic}: {e}")
             else:
                 pnl_pts = ((current_price - pos['entry_price']) if pos['direction'] == 'BUY'
-                          else (pos['entry_price'] - current_price)) * pos['size']
+                          else (pos['entry_price'] - current_price))
 
                 ts_info = trailing_manager.get_info(epic)
 
                 if ts_info:
-                    log.info(f"  {epic}: {current_price:.2f} ({pnl_pts:+.2f} pts)")
+                    log.info(f"  {epic}: {current_price:.2f} (P&L: {pnl_pts:+.2f} pts)")
                     if ts_info['active']:
                         log.info(f"    Trailing: Active | Stop @ {ts_info['current_stop']:.2f} | Trailed {ts_info['total_trailed']:.2f} pts")
                     else:
-                        log.info(f"    Trailing: Waiting for activation")
+                        log.info(f"    Trailing: Waiting | Need {trailing_manager.trailing_stops[epic]['activation_distance']:.2f} pts profit")
 
         except Exception as e:
             log.error(f"Error monitoring {epic}: {e}")
