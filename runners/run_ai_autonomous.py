@@ -72,35 +72,20 @@ class TrailingStopManager:
 
     def update_stop_at_broker(self, epic, new_stop_level):
         """
-        ✅ NEW: Update stop level at IG broker via API
-
-        This is the KEY fix - we update the stop at the broker
+        ✅ Update stop level at IG broker via API
         """
         try:
             ts = self.trailing_stops[epic]
             deal_id = ts['deal_id']
 
-            # IG API: Update position
-            payload = {
-                "stopLevel": new_stop_level,
-                "trailingStop": False  # We manage trailing manually
-            }
-
-            url = f"{self.ig_client.base}/positions/otc/{deal_id}"
-            response = self.ig_client.s.put(
-                url,
-                json=payload,
-                headers=self.ig_client._hv("2"),
-                timeout=20,
-                verify=self.ig_client.verify_ssl
+            # Use the proper IG client method
+            result = self.ig_client.update_position(
+                deal_id=deal_id,
+                stop_level=new_stop_level
             )
 
-            if response.status_code == 200:
-                self.log.info(f"✅ Stop updated at broker: {new_stop_level:.2f}")
-                return True
-            else:
-                self.log.error(f"❌ Failed to update stop: {response.status_code}")
-                return False
+            self.log.info(f"✅ Stop updated at broker: {new_stop_level:.2f}")
+            return True
 
         except Exception as e:
             self.log.error(f"❌ Error updating stop at broker: {e}")
@@ -731,8 +716,18 @@ def main():
                                     tif=cfg["execution"]["time_in_force"]
                                 )
 
-                                deal_id = resp.get('dealReference')
-                                log.info(f"✅ ORDER FILLED: {deal_id}")
+                                deal_ref = resp.get('dealReference')
+                                log.info(f"✅ ORDER PLACED: {deal_ref}")
+
+                                # Get actual dealId from confirmation
+                                try:
+                                    confirm = ig.confirm_deal(deal_ref)
+                                    deal_id = confirm.get('dealId', deal_ref)
+                                    deal_status = confirm.get('dealStatus', 'UNKNOWN')
+                                    log.info(f"✅ CONFIRMED: dealId={deal_id} | status={deal_status}")
+                                except Exception as e:
+                                    log.warning(f"⚠️ Could not confirm deal, using dealReference: {e}")
+                                    deal_id = deal_ref
 
                                 current_price = df['close'].iloc[-1]
 

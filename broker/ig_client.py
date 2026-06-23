@@ -115,6 +115,35 @@ class IGClient:
         )
         r.raise_for_status(); return r.json()
 
+    def confirm_deal(self, deal_reference):
+        """Get deal confirmation with actual dealId from a dealReference."""
+        r = self.s.get(
+            f"{self.base}/confirms/{deal_reference}",
+            headers=self._hv("1"),
+            timeout=20,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status(); return r.json()
+
+    def update_position(self, deal_id, stop_level=None, limit_level=None):
+        """Update stop/limit on an open position using the real dealId."""
+        payload = {}
+        if stop_level is not None:
+            payload["stopLevel"] = stop_level
+        if limit_level is not None:
+            payload["limitLevel"] = limit_level
+        # trailingStop must be false since we manage trailing manually
+        payload["trailingStop"] = False
+
+        r = self.s.put(
+            f"{self.base}/positions/otc/{deal_id}",
+            json=payload,
+            headers=self._hv("2"),
+            timeout=20,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status(); return r.json()
+
     def positions(self):
         r = self.s.get(
             f"{self.base}/positions",
