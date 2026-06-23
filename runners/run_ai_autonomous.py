@@ -501,13 +501,23 @@ def main():
         log.info(f"✓ Trailing stops: DISABLED")
 
     # Initialize Strategy (configurable via strategy_type in YAML)
-    strategy_type = cfg.get("strategy_type", "ai_pattern")  # "ai_pattern" or "fvg"
+    strategy_type = cfg.get("strategy_type", "ai_pattern")  # "ai_pattern", "fvg", or "hybrid"
     ai_config = cfg.get("ai_strategy", {})
 
-    if strategy_type == "fvg":
+    # Always create AI Pattern Recognizer (used as primary or fallback)
+    ai_strategy = AIPatternRecognizer(
+        atr_period=ai_config.get("atr_period", 14),
+        stop_multiplier=ai_config.get("stop_multiplier", 1.5),
+        rr_take=ai_config.get("rr_take", 2.0),
+        confidence_threshold=ai_config.get("confidence_threshold", 0.30),
+        lookback_candles=ai_config.get("lookback_candles", 250),
+        cfd_mode=ai_config.get("cfd_mode", True)
+    )
+
+    fvg_strategy_instance = None
+    if strategy_type in ("fvg", "hybrid"):
         fvg_config = cfg.get("fvg_strategy", {})
-        # Use the first epic for FVG (single-instrument strategy)
-        strategy = FVGStrategy(
+        fvg_strategy_instance = FVGStrategy(
             config=fvg_config,
             data_provider=aggregator,
             symbol_epic=epics[0],
@@ -516,16 +526,16 @@ def main():
         log.info(f"  - Cycle interval: {fvg_config.get('cycle_interval_seconds', 300)}s")
         log.info(f"  - Timeframes: {fvg_config.get('timeframes', ['60min', '15min', '5min'])}")
         log.info(f"  - Min confidence: {fvg_config.get('min_bias_confidence', 0.6)}")
+
+    if strategy_type == "fvg":
+        strategy = fvg_strategy_instance
+        log.info(f"✓ Strategy: FVG only (no fallback)")
+    elif strategy_type == "hybrid":
+        strategy = fvg_strategy_instance  # Primary — fallback handled in loop
+        log.info(f"✓ Strategy: FVG primary + AI Pattern fallback")
     else:
-        strategy = AIPatternRecognizer(
-            atr_period=ai_config.get("atr_period", 14),
-            stop_multiplier=ai_config.get("stop_multiplier", 1.5),
-            rr_take=ai_config.get("rr_take", 2.0),
-            confidence_threshold=ai_config.get("confidence_threshold", 0.30),
-            lookback_candles=ai_config.get("lookback_candles", 250),
-            cfd_mode=ai_config.get("cfd_mode", True)
-        )
-        log.info(f"✓ AI Pattern Recognizer initialized")
+        strategy = ai_strategy
+        log.info(f"✓ Strategy: AI Pattern Recognizer")
 
     # Load market details
     market_cache = {}
@@ -620,6 +630,12 @@ def main():
 
                     log.info(f"🔍 Analyzing {epic}...")
                     signal = strategy.on_bar(df)
+
+                    # Hybrid mode: fallback to AI Pattern Recognizer if FVG returns no signal
+                    if signal is None and strategy_type == "hybrid" and ai_strategy is not None:
+                        signal = ai_strategy.on_bar(df)
+                        if signal:
+                            log.info(f"🔄 FVG neutral — AI Pattern fallback triggered")
 
                     decision_entry = {
                         "timestamp": datetime.now(UTC).isoformat(),

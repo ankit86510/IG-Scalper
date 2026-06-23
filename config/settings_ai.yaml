@@ -1,7 +1,7 @@
 env: "paper"    # paper or live
 
-# Strategy selection: "ai_pattern" or "fvg"
-strategy_type: "fvg"
+# Strategy selection: "ai_pattern", "fvg", or "hybrid"
+strategy_type: "hybrid"
 
 timeframes:
   primary: "5min"       # Primary trading timeframe (5min = 288 bars/24h)
@@ -127,7 +127,7 @@ fvg_strategy:
     - "60min"
     - "15min"
     - "5min"
-  fvg_max_age_bars: 50           # Expire FVGs older than 50 bars
+  fvg_max_age_bars: 100           # Expire FVGs older than 100 bars on their timeframe
   stop_buffer_points: 2.0        # Buffer beyond FVG boundary for stop
   min_bias_confidence: 0.6       # Minimum confidence to generate signal
   lookback_candles: 200          # Bars to fetch per timeframe

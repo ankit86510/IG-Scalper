@@ -163,8 +163,11 @@ class FVGDetector:
     def update_fill_status(self, fvgs: List[FVG], df: pd.DataFrame, max_age: int = 50) -> List[FVG]:
         """Process bars chronologically, update fill status, expire old FVGs.
 
-        For each bar in df (chronological order):
-          - Increment age_bars for all active FVGs
+        For each FVG, only processes bars AFTER the FVG's formation timestamp.
+        This ensures age_bars reflects actual bars elapsed since formation.
+
+        For each relevant bar:
+          - Increment age_bars for FVGs formed before that bar
           - For bullish FVGs: check if bar.high fills the zone
           - For bearish FVGs: check if bar.low fills the zone
           - Remove fully-filled and expired FVGs
@@ -182,7 +185,7 @@ class FVGDetector:
 
         active = list(fvgs)
 
-        for _, bar in df.iterrows():
+        for idx, bar in df.iterrows():
             bar_high = bar["high"]
             bar_low = bar["low"]
 
@@ -190,10 +193,29 @@ class FVGDetector:
             if pd.isna(bar_high) or pd.isna(bar_low):
                 continue
 
+            # Get bar timestamp for age comparison
+            bar_ts = idx if isinstance(idx, datetime) else None
+
             to_remove = []
 
             for fvg in active:
-                # Increment age for each bar processed
+                # Only process bars that come AFTER this FVG formed
+                if bar_ts is not None and fvg.formation_ts is not None:
+                    # Compare timestamps (handle timezone-aware vs naive)
+                    fvg_ts = fvg.formation_ts
+                    cmp_bar_ts = bar_ts
+
+                    # Normalize both to naive for comparison if mixed
+                    if hasattr(fvg_ts, 'tzinfo') and fvg_ts.tzinfo is not None:
+                        if hasattr(cmp_bar_ts, 'tzinfo') and cmp_bar_ts.tzinfo is None:
+                            fvg_ts = fvg_ts.replace(tzinfo=None)
+                    elif hasattr(cmp_bar_ts, 'tzinfo') and cmp_bar_ts.tzinfo is not None:
+                        cmp_bar_ts = cmp_bar_ts.replace(tzinfo=None)
+
+                    if cmp_bar_ts <= fvg_ts:
+                        continue  # Skip bars at or before formation
+
+                # Increment age for each bar processed after formation
                 fvg.age_bars += 1
 
                 # Check fill status based on FVG type
