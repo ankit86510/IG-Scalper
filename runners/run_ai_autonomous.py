@@ -702,15 +702,37 @@ def main():
                 today = stats.get('today', {})
                 alltime = stats.get('alltime', {})
 
+                # Fetch real P&L from IG transaction history
+                ig_today_pnl = 0.0
+                ig_today_trades = 0
+                try:
+                    from zoneinfo import ZoneInfo
+                    rome_tz = ZoneInfo("Europe/Rome")
+                    today_start = datetime.now(rome_tz).strftime("%Y-%m-%dT00:00:00")
+                    txns = ig.get_transactions(from_date=today_start)
+                    transactions = txns.get('transactions', [])
+                    for txn in transactions:
+                        if txn.get('transactionType') == 'DEAL':
+                            try:
+                                pnl = float(txn.get('profitAndLoss', '0').replace('E', '').replace(',', ''))
+                                ig_today_pnl += pnl
+                                ig_today_trades += 1
+                            except (ValueError, AttributeError):
+                                pass
+                except Exception as e:
+                    log.debug(f"Could not fetch IG transactions: {e}")
+
                 log.info("=" * 80)
                 log.info(f"📊 PERFORMANCE UPDATE")
-                log.info(f"  TODAY: {today.get('completed', 0)} trades | "
+                if ig_today_trades > 0:
+                    log.info(f"  TODAY (from IG): {ig_today_trades} trades | P&L: £{ig_today_pnl:+.2f}")
+                log.info(f"  TODAY (bot-tracked): {today.get('completed', 0)} trades | "
                          f"Win Rate: {today.get('win_rate', 0):.1f}% | "
                          f"P&L: {today.get('total_pnl_pts', 0):+.2f} pts")
                 if today.get('completed', 0) > 0:
                     log.info(f"    Wins: {today.get('wins', 0)} ({today.get('avg_win_pts', 0):+.2f} avg) | "
                              f"Losses: {today.get('losses', 0)} ({today.get('avg_loss_pts', 0):+.2f} avg)")
-                log.info(f"  ALL-TIME: {alltime.get('completed', 0)} trades | "
+                log.info(f"  ALL-TIME (bot-tracked): {alltime.get('completed', 0)} trades | "
                          f"Win Rate: {alltime.get('win_rate', 0):.1f}% | "
                          f"P&L: {alltime.get('total_pnl_pts', 0):+.2f} pts")
                 log.info(f"  Open Positions: {len(position_manager.positions)}")

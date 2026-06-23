@@ -59,10 +59,26 @@ class IGClient:
         )
         r.raise_for_status(); return r.json()
 
-    def get_prices(self, epic: str, resolution="MINUTE", max=200):
+    def get_prices(self, epic: str, resolution="MINUTE", max=200, from_date=None, to_date=None):
+        """Get historical prices for an instrument.
+
+        Args:
+            epic: Instrument epic
+            resolution: MINUTE, MINUTE_5, MINUTE_15, HOUR, DAY, etc.
+            max: Max price points (ignored if from/to specified)
+            from_date: Start datetime (yyyy-MM-dd'T'HH:mm:ss)
+            to_date: End datetime (yyyy-MM-dd'T'HH:mm:ss)
+        """
+        params = {"resolution": resolution, "max": max, "pageSize": 0}
+        if from_date:
+            params["from"] = from_date
+            params.pop("max", None)
+        if to_date:
+            params["to"] = to_date
+
         r = self.s.get(
             f"{self.base}/prices/{epic}",
-            params={"resolution": resolution, "max": max},
+            params=params,
             headers=self._hv("3"),
             timeout=25,
             verify=self.verify_ssl
@@ -157,6 +173,40 @@ class IGClient:
         r = self.s.get(
             f"{self.base}/accounts",
             headers=self._hv("1"),
+            timeout=20,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status(); return r.json()
+
+    def get_transactions(self, from_date=None, to_date=None, transaction_type="ALL_DEAL"):
+        """Get transaction history. Dates in format: 2026-06-23T00:00:00"""
+        params = {"type": transaction_type, "pageSize": 50}
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+
+        r = self.s.get(
+            f"{self.base}/history/transactions",
+            params=params,
+            headers=self._hv("2"),
+            timeout=20,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status(); return r.json()
+
+    def get_activity(self, from_date=None, to_date=None):
+        """Get account activity history."""
+        params = {"pageSize": 50}
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+
+        r = self.s.get(
+            f"{self.base}/history/activity",
+            params=params,
+            headers=self._hv("3"),
             timeout=20,
             verify=self.verify_ssl
         )

@@ -428,14 +428,19 @@ class IGPriceProvider:
 
     RESOLUTION_MAP = {
         "1min": "MINUTE",
+        "2min": "MINUTE_2",
         "3min": "MINUTE_3",
         "5min": "MINUTE_5",
+        "10min": "MINUTE_10",
         "15min": "MINUTE_15",
         "30min": "MINUTE_30",
         "60min": "HOUR",
         "1h": "HOUR",
+        "2h": "HOUR_2",
+        "3h": "HOUR_3",
         "4h": "HOUR_4",
         "1day": "DAY",
+        "1week": "WEEK",
     }
 
     MAX_BARS = {
