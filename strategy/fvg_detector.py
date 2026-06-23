@@ -78,6 +78,7 @@ class FVGDetector:
         """Scan all 3-candle windows up through penultimate bar (iloc[-2]).
 
         Returns list of detected FVGs. Excludes the last bar (still forming).
+        Filters out FVGs smaller than minimum gap size for the timeframe.
 
         Args:
             df: DataFrame with OHLC columns (open, high, low, close) and a
@@ -89,6 +90,14 @@ class FVGDetector:
         """
         if df is None or len(df) < 3:
             return []
+
+        # Minimum gap size based on timeframe (filters noise gaps)
+        min_gap_size = {
+            "60min": 3.0,   # 3 points for hourly
+            "1h": 3.0,
+            "15min": 1.5,   # 1.5 points for 15min
+            "5min": 0.8,    # 0.8 points for 5min
+        }.get(timeframe, 1.0)
 
         fvgs: List[FVG] = []
         ohlc_cols = ["open", "high", "low", "close"]
@@ -115,6 +124,10 @@ class FVGDetector:
 
             # Bullish FVG: candle[i].high < candle[i+2].low
             if c1["high"] < c3["low"]:
+                gap_size = float(c3["low"]) - float(c1["high"])
+                if gap_size < min_gap_size:
+                    continue  # Skip tiny gaps
+
                 ts = c2.name if isinstance(c2.name, datetime) else datetime.now()
                 fvg = FVG(
                     type="bullish",
@@ -124,7 +137,6 @@ class FVGDetector:
                     source_tf=timeframe,
                 )
                 fvgs.append(fvg)
-                # Req 8.1: Log each detected FVG at DEBUG with Rome timezone
                 rome_ts = ts.astimezone(ROME_TZ) if ts.tzinfo else ts
                 logger.debug(
                     f"FVG detected: type=bullish | zone=[{fvg.zone_lower:.2f}, {fvg.zone_upper:.2f}] | "
@@ -133,6 +145,10 @@ class FVGDetector:
 
             # Bearish FVG: candle[i].low > candle[i+2].high
             elif c1["low"] > c3["high"]:
+                gap_size = float(c1["low"]) - float(c3["high"])
+                if gap_size < min_gap_size:
+                    continue  # Skip tiny gaps
+
                 ts = c2.name if isinstance(c2.name, datetime) else datetime.now()
                 fvg = FVG(
                     type="bearish",

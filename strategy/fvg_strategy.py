@@ -259,15 +259,12 @@ class FVGStrategy(Strategy):
         # Calculate 60min bias (Req 3.2, 3.3)
         bias = self.bias_calc.calculate_60min_bias(fvgs_60min)
 
-        # Req 3.6: If no unfilled FVGs on 60min → neutral bias, skip signal
         if bias.direction == "neutral" and bias.confidence == 0.0:
             now_rome = datetime.now(tz=ROME_TZ)
             logger.info(
-                f"FVGStrategy: neutral bias (no active 60min FVGs) at "
-                f"{now_rome.strftime('%Y-%m-%d %H:%M:%S %Z')}, skipping signal generation"
+                f"FVGStrategy: no active 60min FVGs at "
+                f"{now_rome.strftime('%Y-%m-%d %H:%M:%S %Z')}, checking lower timeframes..."
             )
-            self.rate_budget.log_cycle_consumption()
-            return None
 
         # --- Step 2: Fetch and analyze 15min ---
         mtf = timeframes[1] if len(timeframes) > 1 else "15min"
@@ -292,12 +289,28 @@ class FVGStrategy(Strategy):
         logger.info(f"FVGStrategy [{mtf}]: detected {len(fvgs_15min)} active FVGs")
 
         # Adjust bias with 15min (Req 3.4, 3.5)
-        bias = self.bias_calc.adjust_with_15min(bias, fvgs_15min)
+        # If 60min bias is neutral, use 15min bias directly
+        if bias.direction == "neutral" and bias.confidence == 0.0:
+            bias = self.bias_calc.calculate_60min_bias(fvgs_15min)  # Reuse same logic for 15min
+            if bias.direction != "neutral":
+                logger.info(f"FVGStrategy: using 15min bias as primary: {bias.direction}@{bias.confidence:.2f}")
+        else:
+            bias = self.bias_calc.adjust_with_15min(bias, fvgs_15min)
 
         logger.info(
             f"FVGStrategy bias after 15min adjustment: "
             f"direction={bias.direction}, confidence={bias.confidence:.2f}"
         )
+
+        # If still neutral after 15min, skip signal generation
+        if bias.direction == "neutral" and bias.confidence == 0.0:
+            now_rome = datetime.now(tz=ROME_TZ)
+            logger.info(
+                f"FVGStrategy: neutral bias (no active FVGs on 60min or 15min) at "
+                f"{now_rome.strftime('%Y-%m-%d %H:%M:%S %Z')}, skipping signal generation"
+            )
+            self.rate_budget.log_cycle_consumption()
+            return None
 
         # --- Step 3: Analyze 5min from on_bar DataFrame ---
         ltf = timeframes[2] if len(timeframes) > 2 else "5min"
