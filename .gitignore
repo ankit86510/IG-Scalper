@@ -1,0 +1,22 @@
+# Credentials - never commit these
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.Python
+
+# Runtime output
+logs/
+data/*.json
+data/*.db
+data/*.csv
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace

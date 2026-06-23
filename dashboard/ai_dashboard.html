@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trading Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .status-live {
+            background: linear-gradient(45deg, #00f260, #0575e6);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .card-icon {
+            font-size: 1.5em;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+        }
+
+        .positive {
+            color: #00f260;
+        }
+
+        .negative {
+            color: #ff4757;
+        }
+
+        .neutral {
+            color: #ffa502;
+        }
+
+        .positions-list {
+            margin-top: 20px;
+        }
+
+        .position-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+
+        .position-buy {
+            border-left-color: #00f260;
+        }
+
+        .position-sell {
+            border-left-color: #ff4757;
+        }
+
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .position-symbol {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .position-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .patterns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pattern-badge {
+            background: rgba(0, 212, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85em;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4757, #ffa502, #00f260);
+            transition: width 0.3s ease;
+        }
+
+        .recent-decisions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .decision-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .decision-item:last-child {
+            border-bottom: none;
+        }
+
+        .decision-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85em;
+        }
+
+        .decision-action {
+            padding: 5px 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .action-buy {
+            background: rgba(0, 242, 96, 0.2);
+            color: #00f260;
+        }
+
+        .action-sell {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .action-hold {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .live-indicator {
+            width: 10px;
+            height: 10px;
+            background: #00f260;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Trading Dashboard</h1>
+            <div class="status-badge status-live">
+                <span class="live-indicator"></span>
+                SYSTEM ACTIVE
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Total Trades Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Total Trades</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div class="metric-value" id="totalTrades">0</div>
+                <div class="metric-label">Completed trades</div>
+            </div>
+
+            <!-- Win Rate Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Win Rate</span>
+                    <span class="card-icon">🎯</span>
+                </div>
+                <div class="metric-value positive" id="winRate">0%</div>
+                <div class="metric-label">Success ratio</div>
+            </div>
+
+            <!-- Total P&L Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Total P&L</span>
+                    <span class="card-icon">💰</span>
+                </div>
+                <div class="metric-value" id="totalPnl">+0.0 pts</div>
+                <div class="metric-label">Points gained/lost</div>
+            </div>
+
+            <!-- AI Confidence Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Avg Confidence</span>
+                    <span class="card-icon">🧠</span>
+                </div>
+                <div class="metric-value neutral" id="avgConfidence">0%</div>
+                <div class="metric-label">AI decision confidence</div>
+            </div>
+        </div>
+
+        <!-- Open Positions -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Open Positions</span>
+                <span class="card-icon">📈</span>
+            </div>
+            <div class="positions-list" id="positionsList">
+                <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;">
+                    No open positions
+                </div>
+            </div>
+        </div>
+
+        <!-- Detected Patterns -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <span class="card-title">Recent Pattern Detection</span>
+                <span class="card-icon">🔍</span>
+            </div>
+            <div class="patterns-grid" id="patternsGrid">
+                <div class="pattern-badge">HAMMER</div>
+                <div class="pattern-badge">ENGULFING</div>
+                <div class="pattern-badge">DOUBLE TOP</div>
+                <div class="pattern-badge">TRIANGLE</div>
+            </div>
+        </div>
+
+        <!-- Recent AI Decisions -->
+        <div class="recent-decisions">
+            <h2 style="margin-bottom: 20px; color: #00d4ff;">Recent AI Decisions</h2>
+            <div id="decisionsList">
+                <div class="decision-item">
+                    <div>
+                        <div style="font-weight: 600;">EUR/USD</div>
+                        <div class="decision-time">2 minutes ago</div>
+                    </div>
+                    <div>
+                        <span class="decision-action action-buy">BUY</span>
+                        <span style="margin-left: 10px; color: rgba(255,255,255,0.6);">72% confidence</span>
+                    </div>
+                </div>
+                <div class="decision-item">
+                    <div>
+                        <div style="font-weight: 600;">GOLD</div>
+                        <div class="decision-time">5 minutes ago</div>
+                    </div>
+                    <div>
+                        <span class="decision-action action-hold">HOLD</span>
+                        <span style="margin-left: 10px; color: rgba(255,255,255,0.6);">45% confidence</span>
+                    </div>
+                </div>
+                <div class="decision-item">
+                    <div>
+                        <div style="font-weight: 600;">GBP/USD</div>
+                        <div class="decision-time">8 minutes ago</div>
+                    </div>
+                    <div>
+                        <span class="decision-action action-sell">SELL</span>
+                        <span style="margin-left: 10px; color: rgba(255,255,255,0.6);">68% confidence</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated data update (replace with actual WebSocket or API calls)
+        function updateDashboard() {
+            // This would normally fetch from your backend API or analysis report JSON
+
+            // Update metrics
+            document.getElementById('totalTrades').textContent = Math.floor(Math.random() * 50) + 10;
+
+            const winRate = Math.random() * 40 + 50; // 50-90%
+            document.getElementById('winRate').textContent = winRate.toFixed(1) + '%';
+            document.getElementById('winRate').className = 'metric-value ' + (winRate > 60 ? 'positive' : 'negative');
+
+            const pnl = (Math.random() * 200 - 50).toFixed(1);
+            document.getElementById('totalPnl').textContent = (pnl > 0 ? '+' : '') + pnl + ' pts';
+            document.getElementById('totalPnl').className = 'metric-value ' + (pnl > 0 ? 'positive' : 'negative');
+
+            const confidence = Math.random() * 30 + 60; // 60-90%
+            document.getElementById('avgConfidence').textContent = confidence.toFixed(0) + '%';
+        }
+
+        // Load data from analysis report
+        async function loadAnalysisReport() {
+            try {
+                const response = await fetch('/data/ai_analysis_report.json');
+                if (!response.ok) return;
+
+                const data = await response.json();
+
+                // Update performance metrics
+                if (data.performance) {
+                    document.getElementById('totalTrades').textContent = data.performance.completed || 0;
+                    document.getElementById('winRate').textContent = (data.performance.win_rate || 0).toFixed(1) + '%';
+                    document.getElementById('totalPnl').textContent =
+                        (data.performance.total_pnl_pts > 0 ? '+' : '') +
+                        (data.performance.total_pnl_pts || 0).toFixed(1) + ' pts';
+                }
+
+                // Update recent decisions
+                if (data.decision_log && data.decision_log.length > 0) {
+                    updateDecisionsList(data.decision_log.slice(-10).reverse());
+                }
+
+                // Update recent trades (as positions)
+                if (data.recent_trades && data.recent_trades.length > 0) {
+                    updatePositionsList(data.recent_trades.slice(-5));
+                }
+
+            } catch (error) {
+                console.log('Report not available yet:', error.message);
+            }
+        }
+
+        function updateDecisionsList(decisions) {
+            const container = document.getElementById('decisionsList');
+            container.innerHTML = '';
+
+            decisions.forEach(decision => {
+                const item = document.createElement('div');
+                item.className = 'decision-item';
+
+                const timeAgo = getTimeAgo(new Date(decision.timestamp));
+                const action = decision.signal ? 'TRADE' : 'HOLD';
+                const actionClass = decision.signal ?
+                    (Math.random() > 0.5 ? 'action-buy' : 'action-sell') :
+                    'action-hold';
+
+                item.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600;">${decision.epic}</div>
+                        <div class="decision-time">${timeAgo}</div>
+                    </div>
+                    <div>
+                        <span class="decision-action ${actionClass}">${action}</span>
+                        <span style="margin-left: 10px; color: rgba(255,255,255,0.6);">
+                            ${(decision.confidence * 100).toFixed(0)}% confidence
+                        </span>
+                    </div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        function updatePositionsList(trades) {
+            const container = document.getElementById('positionsList');
+            container.innerHTML = '';
+
+            const openTrades = trades.filter(t => t.status === 'OPEN');
+
+            if (openTrades.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;">
+                        No open positions
+                    </div>
+                `;
+                return;
+            }
+
+            openTrades.forEach(trade => {
+                const item = document.createElement('div');
+                item.className = `position-item position-${trade.direction.toLowerCase()}`;
+
+                const patternsHtml = trade.patterns ?
+                    trade.patterns.map(p => `<span style="background: rgba(0,212,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.75em;">${p}</span>`).join(' ') :
+                    '';
+
+                item.innerHTML = `
+                    <div class="position-header">
+                        <span class="position-symbol">${trade.epic || 'Unknown'}</span>
+                        <span style="font-weight: 600; color: ${trade.direction === 'BUY' ? '#00f260' : '#ff4757'}">
+                            ${trade.direction}
+                        </span>
+                    </div>
+                    <div class="position-details">
+                        <div>
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.8em;">Entry</div>
+                            <div style="font-weight: 600;">${(trade.entry_price || 0).toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.8em;">Size</div>
+                            <div style="font-weight: 600;">${trade.size}</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.8em;">Confidence</div>
+                            <div style="font-weight: 600;">${(trade.confidence * 100).toFixed(0)}%</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        ${patternsHtml}
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${trade.confidence * 100}%"></div>
+                    </div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+            return Math.floor(seconds / 86400) + ' days ago';
+        }
+
+        // Initialize and refresh
+        updateDashboard();
+        loadAnalysisReport();
+
+        // Refresh every 10 seconds
+        setInterval(() => {
+            loadAnalysisReport();
+        }, 10000);
+
+        // Update simulated data every 5 seconds for demo
+        setInterval(updateDashboard, 5000);
+    </script>
+</body>
+</html>
