@@ -510,7 +510,7 @@ class SmartDataAggregator:
     def __init__(self, config: Dict, ig_client=None):
         self.ig_client = ig_client
         self.cache = {}
-        self.cache_duration = 270  # 4m30s — matches 5min bar cycle, avoids redundant fetches
+        self.cache_duration = 110  # ~2min — fresh data each loop (IG allows 30 req/min)
         self.providers = []
         self.fetch_stats = {
             "total_requests": 0,
