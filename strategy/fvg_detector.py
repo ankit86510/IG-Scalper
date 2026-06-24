@@ -95,9 +95,9 @@ class FVGDetector:
         min_gap_size = {
             "60min": 3.0,   # 3 points for hourly
             "1h": 3.0,
-            "15min": 1.5,   # 1.5 points for 15min
-            "5min": 0.8,    # 0.8 points for 5min
-        }.get(timeframe, 1.0)
+            "15min": 1.0,   # 1 point for 15min
+            "5min": 0.5,    # 0.5 points for 5min
+        }.get(timeframe, 0.5)
 
         fvgs: List[FVG] = []
         ohlc_cols = ["open", "high", "low", "close"]
@@ -200,6 +200,9 @@ class FVGDetector:
             return fvgs
 
         active = list(fvgs)
+        # Minimum bars to skip after formation before checking fill
+        # (allows the impulse move to complete before checking retracement)
+        settle_bars = 3
 
         for idx, bar in df.iterrows():
             bar_high = bar["high"]
@@ -234,21 +237,35 @@ class FVGDetector:
                 # Increment age for each bar processed after formation
                 fvg.age_bars += 1
 
+                # Skip fill checks for first N bars after formation
+                # (let the impulse move settle before checking retracement)
+                if fvg.age_bars <= settle_bars:
+                    continue
+
                 # Check fill status based on FVG type
+                # Only mark as FILLED if price traverses the ENTIRE zone
                 if fvg.type == "bullish":
                     if bar_high >= fvg.zone_upper:
                         fvg.fill_status = "filled"
                         to_remove.append(fvg)
                     elif bar_high >= fvg.zone_lower:
+                        # Partial fill — narrow the zone but keep it active
                         fvg.fill_status = "partial"
                         fvg.zone_lower = float(bar_high)
+                        # If zone becomes too narrow, remove it
+                        if (fvg.zone_upper - fvg.zone_lower) < 0.5:
+                            to_remove.append(fvg)
                 elif fvg.type == "bearish":
                     if bar_low <= fvg.zone_lower:
                         fvg.fill_status = "filled"
                         to_remove.append(fvg)
                     elif bar_low <= fvg.zone_upper:
+                        # Partial fill — narrow the zone but keep it active
                         fvg.fill_status = "partial"
                         fvg.zone_upper = float(bar_low)
+                        # If zone becomes too narrow, remove it
+                        if (fvg.zone_upper - fvg.zone_lower) < 0.5:
+                            to_remove.append(fvg)
 
                 # Check age expiry
                 if fvg.age_bars > max_age and fvg not in to_remove:
@@ -257,5 +274,4 @@ class FVGDetector:
             # Remove filled and expired FVGs from active set
             for fvg in to_remove:
                 active.remove(fvg)
-
         return active
