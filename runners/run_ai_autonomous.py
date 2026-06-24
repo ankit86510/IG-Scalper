@@ -686,11 +686,28 @@ def main():
             broker_positions = sync_positions_from_broker(ig, position_manager, log)
             positions_after_sync = set(position_manager.positions.keys())
 
-            # Track cooldown for positions closed by broker (SL hit)
+            # Track cooldown for positions closed by broker at a LOSS only
+            # (Don't cooldown after profitable trailing stop exits)
             closed_by_broker = positions_before_sync - positions_after_sync
             for epic in closed_by_broker:
-                last_sl_time[epic] = time.time()
-                log.info(f"⏸️ Cooldown started for {epic} ({cooldown_after_sl}s)")
+                # Check if this was a loss by looking at trade history
+                was_loss = True  # Default to loss (conservative)
+                if position_manager.trade_history:
+                    last_trade = position_manager.trade_history[-1]
+                    if last_trade.get('pnl_pts') is not None and last_trade.get('pnl_pts', 0) > 0:
+                        was_loss = False
+
+                # Also check if trailing stop was active (means it was profitable)
+                if epic in trailing_manager.trailing_stops:
+                    ts_info = trailing_manager.trailing_stops[epic]
+                    if ts_info.get('active') and ts_info.get('total_trailed', 0) > 0:
+                        was_loss = False
+
+                if was_loss:
+                    last_sl_time[epic] = time.time()
+                    log.info(f"⏸️ Cooldown started for {epic} ({cooldown_after_sl}s) — SL loss")
+                else:
+                    log.info(f"✅ No cooldown for {epic} — profitable exit")
 
             # Initialize trailing stops for positions restored from broker (e.g., after restart)
             if use_trailing and broker_positions:
