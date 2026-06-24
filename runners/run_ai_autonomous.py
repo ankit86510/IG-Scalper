@@ -72,13 +72,13 @@ class TrailingStopManager:
 
     def update_stop_at_broker(self, epic, new_stop_level):
         """
-        ✅ Update stop level at IG broker via API
+        Update stop level at IG broker via API.
+        Handles 404 (position no longer exists) gracefully.
         """
         try:
             ts = self.trailing_stops[epic]
             deal_id = ts['deal_id']
 
-            # Use the proper IG client method
             result = self.ig_client.update_position(
                 deal_id=deal_id,
                 stop_level=new_stop_level
@@ -88,6 +88,11 @@ class TrailingStopManager:
             return True
 
         except Exception as e:
+            error_str = str(e)
+            if "404" in error_str:
+                self.log.warning(f"⚠️ Position {epic} no longer exists at broker — removing trailing stop")
+                self.remove(epic)
+                return False
             self.log.error(f"❌ Error updating stop at broker: {e}")
             return False
 
@@ -458,7 +463,12 @@ def monitor_open_positions(ig, position_manager, trailing_manager, data_aggregat
                     trailing_manager.remove(epic)
 
                 except Exception as e:
-                    log.error(f"❌ Failed to close {epic}: {e}")
+                    if "404" in str(e):
+                        log.warning(f"⚠️ Position {epic} already closed at broker — cleaning up")
+                        position_manager.remove_position(epic, current_price, "BROKER_CLOSED")
+                        trailing_manager.remove(epic)
+                    else:
+                        log.error(f"❌ Failed to close {epic}: {e}")
 
                 continue
 
@@ -484,7 +494,12 @@ def monitor_open_positions(ig, position_manager, trailing_manager, data_aggregat
                     trailing_manager.remove(epic)
 
                 except Exception as e:
-                    log.error(f"❌ Failed to close {epic}: {e}")
+                    if "404" in str(e):
+                        log.warning(f"⚠️ Position {epic} already closed at broker — cleaning up")
+                        position_manager.remove_position(epic, current_price, "BROKER_CLOSED")
+                        trailing_manager.remove(epic)
+                    else:
+                        log.error(f"❌ Failed to close {epic}: {e}")
             else:
                 pnl_pts = ((current_price - pos['entry_price']) if pos['direction'] == 'BUY'
                           else (pos['entry_price'] - current_price))
@@ -916,7 +931,19 @@ def main():
             log.info("⚠️ Interrupted by user")
             break
         except Exception as e:
-            log.exception(f"Main loop error: {e}")
+            error_str = str(e)
+            # Re-authenticate if session expired or connection lost
+            if any(x in error_str for x in ["401", "403", "Connection aborted", "RemoteDisconnected", "Read timed out"]):
+                log.warning(f"⚠️ Session/connection issue: {e}")
+                log.info("🔄 Re-authenticating with IG...")
+                try:
+                    ig.login()
+                    log.info("✅ Re-authenticated successfully")
+                except Exception as auth_err:
+                    log.error(f"❌ Re-auth failed: {auth_err}")
+                    time.sleep(60)
+            else:
+                log.exception(f"Main loop error: {e}")
             time.sleep(30)
 
     # Shutdown
