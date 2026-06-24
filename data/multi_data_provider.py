@@ -309,7 +309,7 @@ class TwelveDataProvider:
             bars = []
             for bar in data["values"]:
                 bars.append({
-                    'ts': pd.to_datetime(bar['datetime']),
+                    'ts': pd.to_datetime(bar['datetime']).tz_localize('Europe/Rome'),
                     'open': float(bar['open']),
                     'high': float(bar['high']),
                     'low': float(bar['low']),
