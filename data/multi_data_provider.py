@@ -194,8 +194,8 @@ class TwelveDataProvider:
 
     def get_cache_duration(self, timeframe: str) -> float:
         """
-        Cache duration = min(optimal_poll_interval, timeframe_seconds - 30).
-        Ensures we don't re-fetch within the same bar period.
+        Cache duration based on timeframe.
+        Capped at 120s to ensure fresh data when TwelveData is the active source.
         """
         timeframe_secs = {
             "1min": 60, "3min": 180, "5min": 300,
@@ -204,8 +204,9 @@ class TwelveDataProvider:
         bar_duration = timeframe_secs.get(timeframe, 300)
         poll_interval = self.get_optimal_poll_interval()
 
-        # Cache for whichever is longer: bar cycle or rate-limit interval
-        return max(poll_interval, bar_duration - 30)
+        # Cap cache at 120s — ensures data is always fresh
+        # (IG is primary; TwelveData fallback should still serve recent data)
+        return min(120, max(poll_interval, bar_duration - 30))
 
     def get_budget_status(self) -> Dict:
         """Return current rate limit status for logging/monitoring."""
