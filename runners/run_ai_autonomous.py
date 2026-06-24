@@ -104,6 +104,12 @@ class TrailingStopManager:
             error_str = str(e)
             if "404" in error_str:
                 self.log.warning(f"⚠️ Position {epic} no longer exists at broker — removing trailing stop")
+                # Record as profitable exit if trailing was active
+                ts = self.trailing_stops.get(epic, {})
+                if ts.get('active') and ts.get('total_trailed', 0) > 0:
+                    if not hasattr(self, '_profitable_exits'):
+                        self._profitable_exits = set()
+                    self._profitable_exits.add(epic)
                 self.remove(epic)
                 return False
             self.log.error(f"❌ Error updating stop at broker: {e}")
@@ -692,16 +698,29 @@ def main():
             for epic in closed_by_broker:
                 # Check if this was a loss by looking at trade history
                 was_loss = True  # Default to loss (conservative)
-                if position_manager.trade_history:
-                    last_trade = position_manager.trade_history[-1]
-                    if last_trade.get('pnl_pts') is not None and last_trade.get('pnl_pts', 0) > 0:
-                        was_loss = False
 
-                # Also check if trailing stop was active (means it was profitable)
+                # Check trade history for positive P&L
+                if position_manager.trade_history:
+                    # Find most recent trade for this epic
+                    for trade in reversed(position_manager.trade_history):
+                        if trade.get('deal_id') or True:  # any recent trade
+                            if trade.get('pnl_pts') is not None and trade.get('pnl_pts', 0) > 0:
+                                was_loss = False
+                            break
+
+                # Check if trailing stop was active (means it was profitable)
                 if epic in trailing_manager.trailing_stops:
                     ts_info = trailing_manager.trailing_stops[epic]
                     if ts_info.get('active') and ts_info.get('total_trailed', 0) > 0:
                         was_loss = False
+
+                # Check if trailing stop was recently removed as profitable
+                # (it may have been cleaned up by update_stop_at_broker on 404)
+                if not hasattr(trailing_manager, '_profitable_exits'):
+                    trailing_manager._profitable_exits = set()
+                if epic in trailing_manager._profitable_exits:
+                    was_loss = False
+                    trailing_manager._profitable_exits.discard(epic)
 
                 if was_loss:
                     last_sl_time[epic] = time.time()
@@ -825,22 +844,30 @@ def main():
                         if signal:
                             log.info(f"🔄 FVG neutral — AI Pattern fallback triggered")
 
+                    # Extract confidence from either AI or FVG signal format
+                    meta = signal.get("meta", {}) if signal else {}
+                    confidence = meta.get("confidence", meta.get("bias_confidence", 0.0))
+
                     decision_entry = {
                         "timestamp": datetime.now(UTC).isoformat(),
                         "epic": epic,
                         "signal": signal is not None,
-                        "confidence": signal["meta"]["confidence"] if signal else 0.0
+                        "confidence": confidence if signal else 0.0
                     }
                     position_manager.decision_log.append(decision_entry)
 
                     if signal:
-                        confidence = signal["meta"]["confidence"]
-                        patterns = signal["meta"]["patterns_detected"]
+                        patterns = meta.get("patterns_detected", [])
 
                         log.info("=" * 60)
                         log.info(f"🎯 AI SIGNAL: {epic} {signal['side']}")
                         log.info(f"   Confidence: {confidence:.1%}")
-                        log.info(f"   Patterns: {', '.join(patterns) if patterns else 'None'}")
+                        if patterns:
+                            log.info(f"   Patterns: {', '.join(patterns)}")
+                        if meta.get("trigger_fvg"):
+                            fvg = meta["trigger_fvg"]
+                            log.info(f"   FVG Zone: [{fvg['zone_lower']:.2f}, {fvg['zone_upper']:.2f}] ({fvg['source_tf']})")
+                            log.info(f"   Bias: {meta.get('bias_direction', 'N/A')}@{meta.get('bias_confidence', 0):.2f}")
 
                         # Show S/R info if available
                         if 'sr_zones' in signal.get('meta', {}):
