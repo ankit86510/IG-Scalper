@@ -26,12 +26,31 @@ alphavantage:
 finnhub:
   api_key: "${FINNHUB_KEY}"
 
+ml_filter:
+  enabled: true
+  probability_threshold: 0.55
+  rolling_window_bars: 500
+  retrain_interval_hours: 168
+  model_path: "data/ml_model.joblib"
+  model_type: "logistic_regression"  # or "random_forest"
+
+volatility_filter:
+  enabled: true
+  atr_period: 14
+  lookback_bars: 100
+  lower_percentile: 20.0
+  upper_percentile: 80.0
+
 risk:
   account_equity: 10000
   invest_per_trade: 1000
   max_loss_pct_invest: 5.0  # Max 5% of invested capital per trade
   max_daily_loss_pct: 3.0   # Stop trading if down 3% on the day
   max_losing_trades: 3      # Stop after 3 consecutive losses
+  risk_pct_per_trade: 2.0
+  equity_refresh_interval_seconds: 300
+  use_dynamic_sizing: true
+  max_size_multiple: 50
 
 execution:
   time_in_force: "FILL_OR_KILL"

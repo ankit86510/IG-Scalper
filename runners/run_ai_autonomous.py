@@ -30,6 +30,9 @@ from broker.ig_client import IGClient
 from broker.order_exec import enforce_market_rules, estimate_pip_value
 from strategy.ai_pattern_recognizer import AIPatternRecognizer
 from strategy.fvg_strategy import FVGStrategy
+from strategy.ml_filter import MLDirectionalFilter
+from strategy.volatility_filter import VolatilityRegimeFilter
+from core.position_sizer import RiskPositionSizer
 from data.multi_data_provider import create_data_aggregator
 import logging
 
@@ -654,6 +657,28 @@ def main():
         except Exception as ex:
             log.error(f"✗ Failed to load {e}: {ex}")
 
+    # Initialize ML Trading Improvement components
+    ml_filter = MLDirectionalFilter(cfg.get("ml_filter", {}))
+    vol_filter = VolatilityRegimeFilter(cfg.get("volatility_filter", {}))
+    position_sizer = RiskPositionSizer(cfg.get("risk", {}), ig)
+
+    log.info(f"✓ ML Directional Filter: {'ENABLED' if ml_filter.is_enabled else 'DISABLED (will train on first data)'}")
+    log.info(f"✓ Volatility Regime Filter: {'ENABLED' if vol_filter.enabled else 'DISABLED'}")
+    log.info(f"✓ Risk Position Sizer: dynamic={'ENABLED' if cfg['risk'].get('use_dynamic_sizing', True) else 'DISABLED'}")
+
+    # Initial ML training on first epic's data (if enabled and no pre-trained model)
+    if ml_filter._config_enabled and not ml_filter.is_enabled:
+        log.info("🧠 ML Filter: training on initial data...")
+        try:
+            init_df = aggregator.get_bars(epics[0], timeframe, limit=500)
+            if init_df is not None and len(init_df) >= 100:
+                ml_filter.train(init_df)
+                log.info(f"✓ ML Filter trained on {len(init_df)} bars from {epics[0]}")
+            else:
+                log.warning("⚠ ML Filter: insufficient initial data, will retry later")
+        except Exception as e:
+            log.error(f"✗ ML Filter initial training failed: {e}")
+
     # Initialize managers
     position_manager = PositionManager(log)
     trailing_manager = TrailingStopManager(ig_client=ig, log=log)  # ✅ Pass IG client
@@ -836,6 +861,18 @@ def main():
                         continue
 
                     log.info(f"🔍 Analyzing {epic}...")
+
+                    # --- VOLATILITY FILTER (before on_bar) ---
+                    allowed, vol_meta = vol_filter.allow_trading(df)
+                    log.info(f"🌡️ Volatility filter: {'PASS' if allowed else 'BLOCKED'} | "
+                             f"ATR_Ratio={vol_meta.get('atr_ratio', 'N/A')}, "
+                             f"Percentile={vol_meta.get('percentile', 'N/A')}")
+                    if not allowed:
+                        log.info(f"🌡️ Volatility filter BLOCKED {epic}: {vol_meta['reason']}")
+                        last_bar_time[epic] = df.index[-1]
+                        continue
+
+                    # --- STRATEGY SIGNAL (existing) ---
                     signal = strategy.on_bar(df)
 
                     # Hybrid mode: fallback to AI Pattern Recognizer if FVG returns no signal
@@ -857,6 +894,20 @@ def main():
                     position_manager.decision_log.append(decision_entry)
 
                     if signal:
+                        # --- ML FILTER (after signal, before order) ---
+                        if ml_filter.is_enabled:
+                            confirmed, ml_meta = ml_filter.confirm_signal(signal, df)
+                            log.info(f"🧠 ML filter: {'CONFIRMED' if confirmed else 'REJECTED'} | "
+                                     f"P(bullish)={ml_meta.get('probability', 'N/A')}, "
+                                     f"threshold={ml_meta.get('threshold', 'N/A')}, "
+                                     f"direction={ml_meta.get('direction', 'N/A')}")
+                            if not confirmed:
+                                log.info(f"🧠 ML filter REJECTED {epic}: {ml_meta['reason']}")
+                                last_bar_time[epic] = df.index[-1]
+                                continue
+                        else:
+                            log.info(f"🧠 ML filter: DISABLED (passing signal through)")
+
                         patterns = meta.get("patterns_detected", [])
 
                         log.info("=" * 60)
@@ -891,14 +942,34 @@ def main():
                         mkt = market_cache[epic]
                         pip_value = estimate_pip_value(mkt)
 
-                        proposed_size, max_loss = size_by_invested_capital(
-                            invest_amount_gbp=invest,
-                            max_loss_pct=max_loss_pct,
-                            stop_pts=signal["stop_pts"],
-                            pip_value_per_contract=pip_value,
-                            min_size=mkt["dealingRules"]["minDealSize"]["value"],
-                            size_step=0.1
-                        )
+                        # --- POSITION SIZING ---
+                        if cfg["risk"].get("use_dynamic_sizing", True):
+                            size, size_meta = position_sizer.calculate_size(
+                                stop_distance=signal["stop_pts"],
+                                pip_value=pip_value,
+                                min_size=mkt["dealingRules"]["minDealSize"]["value"],
+                                size_step=0.1
+                            )
+                            log.info(f"💰 Position sizer: {'PASS' if size is not None else 'REJECTED'} | "
+                                     f"equity={size_meta.get('equity', 'N/A')}, "
+                                     f"raw_size={size_meta.get('raw_size', 'N/A'):.4f}, "
+                                     f"result={size}")
+                            if size is None:
+                                log.info(f"💰 Position sizer REJECTED {epic}: {size_meta['reason']}")
+                                last_bar_time[epic] = df.index[-1]
+                                continue  # No cooldown — allows retry next bar
+                            proposed_size = size
+                        else:
+                            # Fallback to existing fixed sizing logic
+                            proposed_size, max_loss = size_by_invested_capital(
+                                invest_amount_gbp=invest,
+                                max_loss_pct=max_loss_pct,
+                                stop_pts=signal["stop_pts"],
+                                pip_value_per_contract=pip_value,
+                                min_size=mkt["dealingRules"]["minDealSize"]["value"],
+                                size_step=0.1
+                            )
+                            log.info(f"💰 Position sizer: FALLBACK (fixed sizing) | size={proposed_size}")
 
                         stop_pts, tp_pts, adj_size = enforce_market_rules(
                             mkt, signal["stop_pts"], signal["tp_pts"], proposed_size
@@ -975,6 +1046,22 @@ def main():
                 except Exception as e:
                     log.error(f"Error processing {epic}: {e}")
                     continue
+
+            # --- PERIODIC ML RETRAINING CHECK ---
+            if ml_filter.should_retrain():
+                log.info("🧠 ML Filter: retrain interval elapsed, retraining...")
+                try:
+                    retrain_df = aggregator.get_bars(epics[0], timeframe, limit=500)
+                    if retrain_df is not None and len(retrain_df) >= 100:
+                        success = ml_filter.retrain(retrain_df)
+                        if success:
+                            log.info("✓ ML Filter retrained successfully")
+                        else:
+                            log.warning("⚠ ML Filter retraining failed, keeping previous model")
+                    else:
+                        log.warning("⚠ ML Filter: insufficient data for retraining")
+                except Exception as e:
+                    log.error(f"✗ ML Filter retraining error: {e}")
 
             # Sleep between cycles — adaptive based on number of active symbols
             # The TwelveData provider internally calculates optimal interval
