@@ -73,15 +73,28 @@ class TrailingStopManager:
     def update_stop_at_broker(self, epic, new_stop_level):
         """
         Update stop level at IG broker via API.
+        Preserves the existing limit (TP) level.
         Handles 404 (position no longer exists) gracefully.
         """
         try:
             ts = self.trailing_stops[epic]
             deal_id = ts['deal_id']
 
+            # Get current limit level from broker to preserve it
+            limit_level = None
+            try:
+                positions_data = self.ig_client.positions()
+                for pos in positions_data.get('positions', []):
+                    if pos.get('position', {}).get('dealId') == deal_id:
+                        limit_level = pos['position'].get('limitLevel')
+                        break
+            except Exception:
+                pass  # If we can't get it, proceed without — better to trail than not
+
             result = self.ig_client.update_position(
                 deal_id=deal_id,
-                stop_level=new_stop_level
+                stop_level=new_stop_level,
+                limit_level=limit_level
             )
 
             self.log.info(f"✅ Stop updated at broker: {new_stop_level:.2f}")
