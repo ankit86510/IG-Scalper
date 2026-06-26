@@ -263,7 +263,7 @@ class PositionManager:
             'stop_distance': stop,
             'tp_distance': tp,
             'stop_level': entry_price - stop if direction == 'BUY' else entry_price + stop,
-            'tp_level': entry_price + tp if direction == 'BUY' else entry_price - tp,
+            'tp_level': (entry_price + tp if direction == 'BUY' else entry_price - tp) if tp > 0 else None,
             'confidence': confidence,
             'patterns': patterns,
             'status': 'OPEN'
@@ -272,7 +272,10 @@ class PositionManager:
         self.log.info(f"📝 Position tracked: {epic}")
         self.log.info(f"   Direction: {direction} @ {entry_price:.2f}")
         self.log.info(f"   Stop: {self.positions[epic]['stop_level']:.2f} ({stop:.2f} pts)")
-        self.log.info(f"   Target: {self.positions[epic]['tp_level']:.2f} ({tp:.2f} pts)")
+        if self.positions[epic]['tp_level']:
+            self.log.info(f"   Target: {self.positions[epic]['tp_level']:.2f} ({tp:.2f} pts)")
+        else:
+            self.log.info(f"   Target: NONE (trailing stop only)")
         self.log.info(f"   Confidence: {confidence:.1%}")
 
     def check_exit_conditions(self, epic, current_price):
@@ -599,6 +602,7 @@ def main():
     use_trailing = cfg["execution"].get("use_trailing_stop", False)
     trailing_activation_pct = cfg["execution"].get("trailing_activation_pct", 0.3)
     trailing_distance_pct = cfg["execution"].get("trailing_distance_pct", 0.5)
+    trailing_poll_seconds = cfg["execution"].get("trailing_poll_seconds", 15)
 
     log.info(f"✓ Monitoring {len(epics)} instruments")
     log.info(f"✓ Timeframe: {timeframe}")
@@ -746,6 +750,9 @@ def main():
                 if epic in trailing_manager._profitable_exits:
                     was_loss = False
                     trailing_manager._profitable_exits.discard(epic)
+
+                # Always clean up trailing stop for closed positions
+                trailing_manager.remove(epic)
 
                 if was_loss:
                     last_sl_time[epic] = time.time()
@@ -982,19 +989,20 @@ def main():
                             current_price = df['close'].iloc[-1]
 
                             try:
+                                use_tp_limit = cfg["execution"].get("use_tp_limit", True)
                                 log.info(f"📤 PLACING ORDER: {epic} {direction}")
-                                log.info(f"   Size: {adj_size} | Stop: {stop_pts:.2f} | TP: {tp_pts:.2f}")
+                                log.info(f"   Size: {adj_size} | Stop: {stop_pts:.2f} | TP: {'NONE (trailing only)' if not use_tp_limit else f'{tp_pts:.2f}'}")
 
                                 if use_trailing:
                                     log.info(f"   Trailing: Will activate after {stop_pts * trailing_activation_pct:.2f} pts profit")
 
-                                # ✅ FIX: Place order with FIXED stop (IG requirement)
+                                # Place order: with or without TP limit
                                 resp = ig.place_order(
                                     epic,
                                     direction,
                                     adj_size,
-                                    stop_distance=stop_pts,  # ✅ Fixed stop
-                                    limit_distance=tp_pts,
+                                    stop_distance=stop_pts,
+                                    limit_distance=tp_pts if use_tp_limit else None,
                                     tif=cfg["execution"]["time_in_force"]
                                 )
 
@@ -1020,7 +1028,7 @@ def main():
                                     size=adj_size,
                                     entry_price=current_price,
                                     stop=stop_pts,
-                                    tp=tp_pts,
+                                    tp=tp_pts if use_tp_limit else 0,
                                     confidence=confidence,
                                     patterns=patterns
                                 )
@@ -1069,7 +1077,87 @@ def main():
             num_symbols = len(epics)
             # Formula: (symbols * 86400) / 720 budget, minimum 60s
             poll_interval = max(60, (num_symbols * 86400) / 720)
-            time.sleep(poll_interval)
+
+            # --- FAST TRAILING STOP MONITORING ---
+            # When trailing stops are active, poll IG market price every N seconds
+            # to trail stops more aggressively. Only uses IG REST API (market details),
+            # which does NOT count against TwelveData rate limits.
+            # When no positions are open, just sleep the full poll_interval.
+            elapsed = 0.0
+
+            if use_trailing and trailing_manager.trailing_stops:
+                log.debug(f"⏱️ Fast trailing mode: polling every {trailing_poll_seconds}s "
+                          f"for {len(trailing_manager.trailing_stops)} active trailing stop(s)")
+
+                while elapsed < poll_interval:
+                    time.sleep(trailing_poll_seconds)
+                    elapsed += trailing_poll_seconds
+
+                    # Only poll if trailing stops still exist
+                    if not trailing_manager.trailing_stops:
+                        break
+
+                    # Clean up stale trailing stops (position closed at broker but trailing not removed)
+                    for epic in list(trailing_manager.trailing_stops.keys()):
+                        if epic not in position_manager.positions:
+                            log.info(f"🧹 Removing stale trailing stop for {epic} (no open position)")
+                            trailing_manager.remove(epic)
+
+                    if not trailing_manager.trailing_stops:
+                        break
+
+                    # Quick position monitoring using IG market price (not TwelveData)
+                    for epic in list(trailing_manager.trailing_stops.keys()):
+                        try:
+                            market = ig.market_details(epic)
+                            bid = market.get('snapshot', {}).get('bid')
+                            offer = market.get('snapshot', {}).get('offer')
+
+                            if not (bid and offer):
+                                continue
+
+                            pos = position_manager.positions.get(epic)
+                            if not pos:
+                                continue
+
+                            current_price = float(bid) if pos['direction'] == 'BUY' else float(offer)
+
+                            # Update trailing stop
+                            action, level = trailing_manager.update(epic, current_price)
+
+                            if action == 'HIT':
+                                log.info(f"🎯 Trailing stop hit for {epic} (fast poll)")
+                                try:
+                                    close_direction = "SELL" if pos['direction'] == 'BUY' else "BUY"
+                                    resp = ig.close_position(
+                                        deal_id=pos['deal_id'],
+                                        direction=close_direction,
+                                        size=pos['size']
+                                    )
+                                    log.info(f"✅ Position closed: {resp.get('dealReference')}")
+                                    position_manager.remove_position(epic, current_price, "TRAILING_STOP")
+                                    trailing_manager.remove(epic)
+                                except Exception as e:
+                                    if "404" in str(e):
+                                        log.warning(f"⚠️ Position {epic} already closed — cleaning up")
+                                        position_manager.remove_position(epic, current_price, "BROKER_CLOSED")
+                                        trailing_manager.remove(epic)
+                                    else:
+                                        log.error(f"❌ Failed to close {epic}: {e}")
+
+                            elif action == 'TRAILED':
+                                log.debug(f"📈 Fast trail update: {epic} stop → {level:.2f}")
+
+                        except Exception as e:
+                            log.debug(f"Fast trailing poll error for {epic}: {e}")
+                            continue
+
+                # Sleep remaining time if loop exited early (positions closed)
+                remaining = poll_interval - elapsed
+                if remaining > 0:
+                    time.sleep(remaining)
+            else:
+                time.sleep(poll_interval)
 
         except KeyboardInterrupt:
             log.info("⚠️ Interrupted by user")

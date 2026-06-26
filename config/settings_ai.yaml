@@ -28,9 +28,9 @@ finnhub:
 
 ml_filter:
   enabled: true
-  probability_threshold: 0.55
+  probability_threshold: 0.50
   rolling_window_bars: 500
-  retrain_interval_hours: 168
+  retrain_interval_hours: 4
   model_path: "data/ml_model.joblib"
   model_type: "logistic_regression"  # or "random_forest"
 
@@ -57,6 +57,8 @@ execution:
   use_trailing_stop: true           # ✅ Enable trailing
   trailing_activation_pct: 0.3      # Activate after 30% of stop profit
   trailing_distance_pct: 0.5        # Keep 50% buffer
+  trailing_poll_seconds: 15         # Poll IG price every 15s when trailing active
+  use_tp_limit: false               # When false, no TP on order — trailing stop is sole exit
 
 ai_strategy:
   confidence_threshold: 0.55
