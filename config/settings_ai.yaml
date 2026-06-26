@@ -38,8 +38,8 @@ volatility_filter:
   enabled: true
   atr_period: 14
   lookback_bars: 100
-  lower_percentile: 20.0
-  upper_percentile: 80.0
+  lower_percentile: 15.0
+  upper_percentile: 85.0
 
 risk:
   account_equity: 10000
@@ -61,7 +61,7 @@ execution:
   use_tp_limit: false               # When false, no TP on order — trailing stop is sole exit
 
 ai_strategy:
-  confidence_threshold: 0.55
+  confidence_threshold: 0.50
   enable_sr_detection: true         # ✅ Enable S/R detection
 
   # NEW: CFD-specific settings
@@ -71,7 +71,7 @@ ai_strategy:
 
   # Risk management — tuned for 5min bars
   atr_period: 14               # ATR period (14 x 5min = 70min lookback)
-  stop_multiplier: 2.0         # Stop loss = ATR * multiplier (wider stops = less noise)
+  stop_multiplier: 1.5         # Stop loss = ATR * multiplier (tighter stops, more trades)
   rr_take: 2.0                 # Risk/Reward ratio (1:2 means 2x profit target)
   lookback_candles: 200        # AI needs 200 bars minimum (TwelveData free max is 250)
 
@@ -83,8 +83,8 @@ ai_strategy:
     trend: 1.5
 
   # Advanced features
-  enable_pattern_confluence: true    # Require multiple patterns
-  min_patterns_for_trade: 2          # Minimum patterns needed
+  enable_pattern_confluence: false   # Don't require multiple patterns (single strong pattern is enough)
+  min_patterns_for_trade: 1          # 1 pattern sufficient when ML + volatility filters are active
   use_sentiment_analysis: false      # Reserved for future ML integration
 
   # Anti-churn: cooldown after stop loss (seconds)
