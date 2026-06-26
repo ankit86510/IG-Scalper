@@ -31,6 +31,7 @@ from broker.order_exec import enforce_market_rules, estimate_pip_value
 from strategy.ai_pattern_recognizer import AIPatternRecognizer
 from strategy.fvg_strategy import FVGStrategy
 from strategy.ml_filter import MLDirectionalFilter
+from strategy.sentiment_filter import SentimentFilter
 from strategy.volatility_filter import VolatilityRegimeFilter
 from core.position_sizer import RiskPositionSizer
 from data.multi_data_provider import create_data_aggregator
@@ -663,10 +664,15 @@ def main():
 
     # Initialize ML Trading Improvement components
     ml_filter = MLDirectionalFilter(cfg.get("ml_filter", {}))
+    sentiment_filter = SentimentFilter(
+        config=cfg.get("sentiment_filter", {}),
+        ig_client=ig
+    )
     vol_filter = VolatilityRegimeFilter(cfg.get("volatility_filter", {}))
     position_sizer = RiskPositionSizer(cfg.get("risk", {}), ig)
 
     log.info(f"✓ ML Directional Filter: {'ENABLED' if ml_filter.is_enabled else 'DISABLED (will train on first data)'}")
+    log.info(f"✓ Sentiment Filter: {'ENABLED' if sentiment_filter.is_enabled else 'DISABLED'}")
     log.info(f"✓ Volatility Regime Filter: {'ENABLED' if vol_filter.enabled else 'DISABLED'}")
     log.info(f"✓ Risk Position Sizer: dynamic={'ENABLED' if cfg['risk'].get('use_dynamic_sizing', True) else 'DISABLED'}")
 
@@ -914,6 +920,19 @@ def main():
                                 continue
                         else:
                             log.info(f"🧠 ML filter: DISABLED (passing signal through)")
+
+                        # --- SENTIMENT FILTER (after ML, before position sizer) ---
+                        sent_confirmed, sentiment_meta = sentiment_filter.confirm_signal(signal, df)
+                        log.info(f"💬 Sentiment filter: {'CONFIRMED' if sent_confirmed else 'REJECTED'} | "
+                                 f"score={sentiment_meta.get('sentiment_score', 'N/A')}, "
+                                 f"threshold={sentiment_meta.get('sentiment_threshold', 'N/A')}, "
+                                 f"cache_hit={sentiment_meta.get('sentiment_cache_hit', 'N/A')}")
+                        # Append sentiment metadata to signal's meta dict
+                        signal.setdefault("meta", {}).update({"sentiment": sentiment_meta})
+                        if not sent_confirmed:
+                            log.info(f"💬 Sentiment filter REJECTED {epic}: {sentiment_meta.get('sentiment_reason', 'unknown')}")
+                            last_bar_time[epic] = df.index[-1]
+                            continue
 
                         patterns = meta.get("patterns_detected", [])
 
