@@ -677,11 +677,11 @@ class AIPatternRecognizer(Strategy):
                     dist_to_support = current_price - nearest_support
                     dist_to_resistance = nearest_resistance - current_price
 
-                    # If SELL signal and price is within 1.5x ATR of support → block
-                    if decision['direction'] == 'SELL' and dist_to_support < (atr_val * 1.5):
+                    # If SELL signal and price is within 1.0x ATR of support → block
+                    if decision['direction'] == 'SELL' and dist_to_support < (atr_val * 1.0):
                         safe_log(self.logger, 'info',
                                  f"⛔ SELL blocked: price {current_price:.2f} too close to support "
-                                 f"{nearest_support:.2f} (dist: {dist_to_support:.2f} < {atr_val * 1.5:.2f})")
+                                 f"{nearest_support:.2f} (dist: {dist_to_support:.2f} < {atr_val * 1.0:.2f})")
                         # Consider reversal to BUY if support is strong (price has bounced before)
                         if dist_to_support < (atr_val * 0.8) and decision['confidence'] > 0.5:
                             safe_log(self.logger, 'info',
@@ -702,11 +702,11 @@ class AIPatternRecognizer(Strategy):
                             log_warning(self.logger, "Signal rejected — selling into support")
                             return None
 
-                    # If BUY signal and price is within 1.5x ATR of resistance → block
-                    elif decision['direction'] == 'BUY' and dist_to_resistance < (atr_val * 1.5):
+                    # If BUY signal and price is within 1.0x ATR of resistance → block
+                    elif decision['direction'] == 'BUY' and dist_to_resistance < (atr_val * 1.0):
                         safe_log(self.logger, 'info',
                                  f"⛔ BUY blocked: price {current_price:.2f} too close to resistance "
-                                 f"{nearest_resistance:.2f} (dist: {dist_to_resistance:.2f} < {atr_val * 1.5:.2f})")
+                                 f"{nearest_resistance:.2f} (dist: {dist_to_resistance:.2f} < {atr_val * 1.0:.2f})")
                         # Consider reversal to SELL if resistance is strong
                         if dist_to_resistance < (atr_val * 0.8) and decision['confidence'] > 0.5:
                             safe_log(self.logger, 'info',
