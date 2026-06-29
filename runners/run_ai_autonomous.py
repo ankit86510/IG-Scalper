@@ -702,7 +702,8 @@ def main():
         log.error(f"Failed to get starting equity: {e}")
         start_equity = 10000.0
 
-    losing_trades = 0
+    consecutive_losses = 0
+    max_consecutive_losses = cfg["risk"].get("max_losing_trades", 3)
     daily_pnl_pct = 0.0
     loop_count = 0
     last_report_time = time.time()
@@ -727,44 +728,32 @@ def main():
             broker_positions = sync_positions_from_broker(ig, position_manager, log)
             positions_after_sync = set(position_manager.positions.keys())
 
-            # Track cooldown for positions closed by broker at a LOSS only
-            # (Don't cooldown after profitable trailing stop exits)
+            # Track cooldown for positions closed by broker at a LOSS
             closed_by_broker = positions_before_sync - positions_after_sync
             for epic in closed_by_broker:
-                # Check if this was a loss by looking at trade history
+                # Determine if this was a loss by checking actual P&L from trade history
                 was_loss = True  # Default to loss (conservative)
+                pnl = 0.0
 
-                # Check trade history for positive P&L
                 if position_manager.trade_history:
-                    # Find most recent trade for this epic
-                    for trade in reversed(position_manager.trade_history):
-                        if trade.get('deal_id') or True:  # any recent trade
-                            if trade.get('pnl_pts') is not None and trade.get('pnl_pts', 0) > 0:
-                                was_loss = False
-                            break
-
-                # Check if trailing stop was active (means it was profitable)
-                if epic in trailing_manager.trailing_stops:
-                    ts_info = trailing_manager.trailing_stops[epic]
-                    if ts_info.get('active') and ts_info.get('total_trailed', 0) > 0:
-                        was_loss = False
-
-                # Check if trailing stop was recently removed as profitable
-                # (it may have been cleaned up by update_stop_at_broker on 404)
-                if not hasattr(trailing_manager, '_profitable_exits'):
-                    trailing_manager._profitable_exits = set()
-                if epic in trailing_manager._profitable_exits:
-                    was_loss = False
-                    trailing_manager._profitable_exits.discard(epic)
+                    # Find the most recent trade (just added by remove_position)
+                    last_trade = position_manager.trade_history[-1]
+                    pnl = last_trade.get('pnl_pts', 0.0) or 0.0
+                    was_loss = pnl <= 0
 
                 # Always clean up trailing stop for closed positions
                 trailing_manager.remove(epic)
 
                 if was_loss:
                     last_sl_time[epic] = time.time()
-                    log.info(f"⏸️ Cooldown started for {epic} ({cooldown_after_sl}s) — SL loss")
+                    consecutive_losses += 1
+                    log.info(
+                        f"⏸️ Cooldown started for {epic} ({cooldown_after_sl}s) — "
+                        f"loss {pnl:+.2f} pts | consecutive losses: {consecutive_losses}/{max_consecutive_losses}"
+                    )
                 else:
-                    log.info(f"✅ No cooldown for {epic} — profitable exit")
+                    consecutive_losses = 0  # Reset on any win
+                    log.info(f"✅ No cooldown for {epic} — profitable exit ({pnl:+.2f} pts)")
 
             # Initialize trailing stops for positions restored from broker (e.g., after restart)
             if use_trailing and broker_positions:
@@ -848,6 +837,16 @@ def main():
             if daily_lockout(daily_pnl_pct, max_daily_loss_pct):
                 log.warning(f"🛑 Daily loss limit: {daily_pnl_pct:.2f}%")
                 time.sleep(600)
+                continue
+
+            # Check consecutive loss limit
+            if consecutive_losses >= max_consecutive_losses:
+                log.warning(
+                    f"🛑 Max consecutive losses reached ({consecutive_losses}/{max_consecutive_losses}) — "
+                    f"pausing for {cooldown_after_sl}s"
+                )
+                time.sleep(cooldown_after_sl)
+                consecutive_losses = 0  # Reset after pause
                 continue
 
             # Process each instrument
@@ -1066,7 +1065,7 @@ def main():
 
                             except Exception as e:
                                 log.exception(f"❌ ORDER FAILED {epic}: {e}")
-                                losing_trades += 1
+                                consecutive_losses += 1
 
                     last_bar_time[epic] = df.index[-1]
 
