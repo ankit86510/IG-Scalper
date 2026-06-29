@@ -687,6 +687,17 @@ class AIPatternRecognizer(Strategy):
                             safe_log(self.logger, 'info',
                                      f"🔄 Reversing to BUY — near strong support, expecting bounce")
                             decision['direction'] = 'BUY'
+                            # For reversal: use strongest (farthest) S/R levels for stop/TP
+                            # Stop below the lowest support, TP at the highest resistance
+                            all_supports = sr_levels.get('support', [])
+                            all_resistances = sr_levels.get('resistance', [])
+                            lowest_support = min(s['level'] for s in all_supports) if all_supports else nearest_support
+                            highest_resistance = max(r['level'] for r in all_resistances) if all_resistances else nearest_resistance
+                            sr_levels['nearest_support'] = lowest_support
+                            sr_levels['nearest_resistance'] = highest_resistance
+                            safe_log(self.logger, 'info',
+                                     f"  Reversal S/R: stop below {lowest_support:.2f}, "
+                                     f"TP at {highest_resistance:.2f}")
                         else:
                             log_warning(self.logger, "Signal rejected — selling into support")
                             return None
@@ -701,6 +712,17 @@ class AIPatternRecognizer(Strategy):
                             safe_log(self.logger, 'info',
                                      f"🔄 Reversing to SELL — near strong resistance, expecting rejection")
                             decision['direction'] = 'SELL'
+                            # For reversal: use strongest (farthest) S/R levels for stop/TP
+                            # Stop above the highest resistance, TP at the lowest support
+                            all_supports = sr_levels.get('support', [])
+                            all_resistances = sr_levels.get('resistance', [])
+                            highest_resistance = max(r['level'] for r in all_resistances) if all_resistances else nearest_resistance
+                            lowest_support = min(s['level'] for s in all_supports) if all_supports else nearest_support
+                            sr_levels['nearest_resistance'] = highest_resistance
+                            sr_levels['nearest_support'] = lowest_support
+                            safe_log(self.logger, 'info',
+                                     f"  Reversal S/R: stop above {highest_resistance:.2f}, "
+                                     f"TP at {lowest_support:.2f}")
                         else:
                             log_warning(self.logger, "Signal rejected — buying into resistance")
                             return None
