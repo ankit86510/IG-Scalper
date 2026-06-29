@@ -4,12 +4,12 @@ env: "paper"    # paper or live
 strategy_type: "ai_pattern"
 
 timeframes:
-  primary: "5min"       # Primary trading timeframe (5min = 288 bars/24h)
-  confirm: "15min"      # Confirmation timeframe
-  trend: "60min"        # Trend timeframe
+  primary: "1min"       # Primary trading timeframe (1min = fresher data, less staleness)
+  confirm: "5min"       # Confirmation timeframe
+  trend: "15min"        # Trend timeframe
 
 # Primary timeframe used by all runners
-timeframe: "5min"
+timeframe: "1min"
 
 ig:
   api_key: "${IG_API_KEY}"
@@ -29,8 +29,8 @@ finnhub:
 ml_filter:
   enabled: true
   probability_threshold: 0.50
-  rolling_window_bars: 500
-  retrain_interval_hours: 4
+  rolling_window_bars: 1000
+  retrain_interval_hours: 2
   model_path: "data/ml_model.joblib"
   model_type: "logistic_regression"  # or "random_forest"
 
@@ -66,14 +66,14 @@ ai_strategy:
 
   # NEW: CFD-specific settings
   cfd_mode: true                    # Enable CFD optimizations
-  min_movement_pct: 0.005           # 0.5% minimum (vs 1% for stocks)
+  min_movement_pct: 0.001           # 0.1% minimum (lower for 1min bars)
   pattern_confidence_boost: 1.3     # Multiply pattern confidence by 1.3x
 
-  # Risk management — tuned for 5min bars
-  atr_period: 14               # ATR period (14 x 5min = 70min lookback)
-  stop_multiplier: 1.5         # Stop loss = ATR * multiplier (tighter stops, more trades)
+  # Risk management — tuned for 1min bars
+  atr_period: 14               # ATR period (14 x 1min = 14min lookback)
+  stop_multiplier: 2.0         # Stop loss = ATR * multiplier (wider on 1min to avoid noise)
   rr_take: 2.0                 # Risk/Reward ratio (1:2 means 2x profit target)
-  lookback_candles: 200        # AI needs 200 bars minimum (TwelveData free max is 250)
+  lookback_candles: 250        # Use max TwelveData bars (250 = ~4 hours on 1min)
 
   # Pattern weights (future enhancement)
   pattern_weights:
