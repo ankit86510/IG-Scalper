@@ -403,7 +403,18 @@ def sync_positions_from_broker(ig, position_manager, log):
         # Remove locally-tracked positions that no longer exist at broker
         for epic in list(position_manager.positions.keys()):
             if epic not in broker_positions:
-                position_manager.remove_position(epic, reason="BROKER_CLOSED")
+                # Get last known price for P&L calculation
+                pos = position_manager.positions[epic]
+                exit_price = None
+                try:
+                    market = ig.market_details(epic)
+                    bid = market.get('snapshot', {}).get('bid')
+                    offer = market.get('snapshot', {}).get('offer')
+                    if bid and offer:
+                        exit_price = float(bid) if pos.get('direction') == 'SELL' else float(offer)
+                except Exception:
+                    pass  # If we can't get price, remove without P&L
+                position_manager.remove_position(epic, exit_price, "BROKER_CLOSED")
                 log.info(f"Position {epic} removed - closed at broker")
 
         # Add broker positions that aren't tracked locally (e.g., after restart)
@@ -707,7 +718,6 @@ def main():
     daily_pnl_pct = 0.0
     loop_count = 0
     last_report_time = time.time()
-    last_sl_time = {}  # Track last stop loss time per epic for cooldown
     cooldown_after_sl = ai_config.get("cooldown_after_sl", 600)  # Default 10 min
 
     log.info("=" * 80)
@@ -728,32 +738,36 @@ def main():
             broker_positions = sync_positions_from_broker(ig, position_manager, log)
             positions_after_sync = set(position_manager.positions.keys())
 
-            # Track cooldown for positions closed by broker at a LOSS
+            # Track consecutive losses for positions closed by broker
             closed_by_broker = positions_before_sync - positions_after_sync
             for epic in closed_by_broker:
                 # Determine if this was a loss by checking actual P&L from trade history
-                was_loss = True  # Default to loss (conservative)
                 pnl = 0.0
 
                 if position_manager.trade_history:
                     # Find the most recent trade (just added by remove_position)
                     last_trade = position_manager.trade_history[-1]
                     pnl = last_trade.get('pnl_pts', 0.0) or 0.0
-                    was_loss = pnl <= 0
 
                 # Always clean up trailing stop for closed positions
                 trailing_manager.remove(epic)
 
-                if was_loss:
-                    last_sl_time[epic] = time.time()
+                if pnl < 0:
                     consecutive_losses += 1
                     log.info(
-                        f"⏸️ Cooldown started for {epic} ({cooldown_after_sl}s) — "
-                        f"loss {pnl:+.2f} pts | consecutive losses: {consecutive_losses}/{max_consecutive_losses}"
+                        f"📉 Loss detected for {epic}: {pnl:+.2f} pts | "
+                        f"consecutive losses: {consecutive_losses}/{max_consecutive_losses}"
                     )
-                else:
+                elif pnl > 0:
                     consecutive_losses = 0  # Reset on any win
-                    log.info(f"✅ No cooldown for {epic} — profitable exit ({pnl:+.2f} pts)")
+                    log.info(f"✅ Win for {epic}: {pnl:+.2f} pts | consecutive losses reset to 0")
+                else:
+                    # pnl == 0 (breakeven or unknown) — treat as loss conservatively
+                    consecutive_losses += 1
+                    log.info(
+                        f"⚠️ Breakeven/unknown P&L for {epic} — treating as loss | "
+                        f"consecutive losses: {consecutive_losses}/{max_consecutive_losses}"
+                    )
 
             # Initialize trailing stops for positions restored from broker (e.g., after restart)
             if use_trailing and broker_positions:
@@ -855,14 +869,6 @@ def main():
                     if epic in position_manager.positions:
                         log.info(f"⏭️ Skipping {epic} - position already open")
                         continue
-
-                    # Cooldown after stop loss — prevent re-entry too quickly
-                    if epic in last_sl_time:
-                        elapsed = time.time() - last_sl_time[epic]
-                        if elapsed < cooldown_after_sl:
-                            remaining = int(cooldown_after_sl - elapsed)
-                            log.info(f"⏸️ Cooldown {epic} - {remaining}s remaining after SL")
-                            continue
 
                     df = aggregator.get_bars(epic, timeframe, limit=250)
 
