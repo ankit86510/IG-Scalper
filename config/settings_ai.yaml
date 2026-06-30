@@ -72,6 +72,7 @@ ai_strategy:
   # Risk management — tuned for 1min bars
   atr_period: 14               # ATR period (14 x 1min = 14min lookback)
   stop_multiplier: 2.0         # Stop loss = ATR * multiplier (wider on 1min to avoid noise)
+  min_stop_pts: 5.0            # Minimum stop distance in points (floor for Gold noise/spread)
   rr_take: 2.0                 # Risk/Reward ratio (1:2 means 2x profit target)
   lookback_candles: 250        # Use max TwelveData bars (250 = ~4 hours on 1min)
 

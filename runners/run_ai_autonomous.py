@@ -638,7 +638,8 @@ def main():
         rr_take=ai_config.get("rr_take", 2.0),
         confidence_threshold=ai_config.get("confidence_threshold", 0.30),
         lookback_candles=ai_config.get("lookback_candles", 250),
-        cfd_mode=ai_config.get("cfd_mode", True)
+        cfd_mode=ai_config.get("cfd_mode", True),
+        min_stop_pts=ai_config.get("min_stop_pts", 5.0)
     )
 
     fvg_strategy_instance = None

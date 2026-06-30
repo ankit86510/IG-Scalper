@@ -216,7 +216,8 @@ class AIPatternRecognizer(Strategy):
                  confidence_threshold: float = 0.30,
                  lookback_candles: int = 50,
                  cfd_mode: bool = True,
-                 enable_sr_detection: bool = True):
+                 enable_sr_detection: bool = True,
+                 min_stop_pts: float = 5.0):
 
         self.atr_period = atr_period
         self.stop_multiplier = stop_multiplier
@@ -225,6 +226,7 @@ class AIPatternRecognizer(Strategy):
         self.lookback = lookback_candles
         self.cfd_mode = cfd_mode
         self.enable_sr_detection = enable_sr_detection
+        self.min_stop_pts = min_stop_pts
 
         # CFD-specific thresholds
         if cfd_mode:
@@ -654,7 +656,7 @@ class AIPatternRecognizer(Strategy):
             log_warning(self.logger, f"Confidence {decision['confidence']:.1%} below threshold - NO TRADE")
             return None
 
-        stop_pts = max(atr_val * self.stop_multiplier, 0.5)
+        stop_pts = max(atr_val * self.stop_multiplier, self.min_stop_pts)
         tp_pts = stop_pts * self.rr_take
 
         sr_levels = None
