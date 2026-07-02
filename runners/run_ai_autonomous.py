@@ -1011,7 +1011,37 @@ def main():
                             log.warning(f"✗ Position size too small: {adj_size}")
                         else:
                             direction = "BUY" if signal["side"] == "BUY" else "SELL"
-                            current_price = df['close'].iloc[-1]
+
+                            # --- REAL-TIME PRICE VALIDATION ---
+                            # Fetch live bid/offer from IG to ensure price hasn't moved
+                            # too far from the analysis price (avoids stale entries)
+                            try:
+                                live_market = ig.market_details(epic)
+                                live_bid = float(live_market.get('snapshot', {}).get('bid', 0))
+                                live_offer = float(live_market.get('snapshot', {}).get('offer', 0))
+                                analysis_price = df['close'].iloc[-2]
+
+                                if direction == "BUY":
+                                    live_price = live_offer  # We buy at offer
+                                else:
+                                    live_price = live_bid  # We sell at bid
+
+                                price_drift = abs(live_price - analysis_price)
+                                max_drift = signal["stop_pts"] * 0.5  # Max 50% of stop distance
+
+                                if price_drift > max_drift:
+                                    log.warning(
+                                        f"⚠️ Price drifted too far: analysis={analysis_price:.2f}, "
+                                        f"live={live_price:.2f}, drift={price_drift:.2f} > max={max_drift:.2f} — skipping"
+                                    )
+                                    last_bar_time[epic] = df.index[-1]
+                                    continue
+
+                                current_price = live_price
+                                log.info(f"📍 Live price validated: {live_price:.2f} (drift: {price_drift:.2f} pts)")
+                            except Exception as e:
+                                log.warning(f"⚠️ Could not validate live price: {e} — using bar close")
+                                current_price = df['close'].iloc[-1]
 
                             try:
                                 use_tp_limit = cfg["execution"].get("use_tp_limit", True)
@@ -1043,8 +1073,6 @@ def main():
                                 except Exception as e:
                                     log.warning(f"⚠️ Could not confirm deal, using dealReference: {e}")
                                     deal_id = deal_ref
-
-                                current_price = df['close'].iloc[-1]
 
                                 position_manager.add_position(
                                     epic=epic,
@@ -1100,8 +1128,10 @@ def main():
             # The TwelveData provider internally calculates optimal interval
             # to never exceed 800/day and 8/min regardless of symbol count
             num_symbols = len(epics)
-            # Formula: (symbols * 86400) / 720 budget, minimum 60s
-            poll_interval = max(60, (num_symbols * 86400) / 720)
+            # Reduced to 60s for 1-min bars — keeps data fresher
+            # Budget: 60s interval = ~1440 req/day max, but TwelveData provider
+            # has internal caching that prevents redundant fetches within same bar
+            poll_interval = 60
 
             # --- FAST TRAILING STOP MONITORING ---
             # When trailing stops are active, poll IG market price every N seconds
