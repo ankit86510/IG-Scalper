@@ -1,3 +1,5 @@
+from typing import Optional
+
 import requests
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 import urllib3
@@ -120,6 +122,39 @@ class IGClient:
         return r.json()
 
 
+    def place_working_order(self, epic: str, direction: str, level: float,
+                            size: float, stop_distance: float,
+                            limit_distance: Optional[float],
+                            good_till_date: str, currency_code: str = "USD",
+                            expiry: str = "-") -> dict:
+        """POST /workingorders/otc — places a STOP working order."""
+        payload = {
+            "epic": epic,
+            "expiry": expiry,
+            "direction": direction,
+            "size": size,
+            "level": level,
+            "type": "STOP",
+            "timeInForce": "GOOD_TILL_DATE",
+            "goodTillDate": good_till_date,
+            "currencyCode": currency_code,
+            "guaranteedStop": False,
+            "forceOpen": True,
+            "stopDistance": stop_distance,
+        }
+        if limit_distance is not None:
+            payload["limitDistance"] = limit_distance
+
+        r = self.s.post(
+            f"{self.base}/workingorders/otc",
+            json=payload,
+            headers=self._hv("2"),
+            timeout=25,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status()
+        return r.json()
+
     def close_position(self, deal_id, direction, size):
         payload = {"dealId": deal_id, "direction": direction, "size": size, "orderType": "MARKET"}
         r = self.s.post(
@@ -195,6 +230,17 @@ class IGClient:
         )
         r.raise_for_status(); return r.json()
 
+    def get_working_orders(self) -> dict:
+        """GET /workingorders — retrieves all active working orders."""
+        r = self.s.get(
+            f"{self.base}/workingorders",
+            headers=self._hv("2"),
+            timeout=20,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status()
+        return r.json()
+
     def get_activity(self, from_date=None, to_date=None):
         """Get account activity history."""
         params = {"pageSize": 50}
@@ -211,3 +257,14 @@ class IGClient:
             verify=self.verify_ssl
         )
         r.raise_for_status(); return r.json()
+
+    def delete_working_order(self, deal_id: str) -> dict:
+        """DELETE /workingorders/otc/{dealId} — cancels a working order."""
+        r = self.s.delete(
+            f"{self.base}/workingorders/otc/{deal_id}",
+            headers=self._hv("2"),
+            timeout=20,
+            verify=self.verify_ssl
+        )
+        r.raise_for_status()
+        return r.json()

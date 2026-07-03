@@ -195,7 +195,9 @@ class TwelveDataProvider:
     def get_cache_duration(self, timeframe: str) -> float:
         """
         Cache duration based on timeframe.
-        Capped at 120s to ensure fresh data when TwelveData is the active source.
+        For 1min timeframe: cache = 55s (just under bar duration) so every 60s poll
+        gets fresh data. For longer timeframes: cache = bar_duration - 30s, capped
+        at the optimal poll interval.
         """
         timeframe_secs = {
             "1min": 60, "3min": 180, "5min": 300,
@@ -204,9 +206,10 @@ class TwelveDataProvider:
         bar_duration = timeframe_secs.get(timeframe, 300)
         poll_interval = self.get_optimal_poll_interval()
 
-        # Cap cache at 120s — ensures data is always fresh
-        # (IG is primary; TwelveData fallback should still serve recent data)
-        return min(120, max(poll_interval, bar_duration - 30))
+        # For 1min bars: cache just under 60s so each poll cycle fetches fresh data
+        # For longer bars: use bar_duration - 30s, capped at poll_interval
+        cache_ttl = min(bar_duration - 5, max(poll_interval, bar_duration - 30))
+        return cache_ttl
 
     def get_budget_status(self) -> Dict:
         """Return current rate limit status for logging/monitoring."""
@@ -511,7 +514,7 @@ class SmartDataAggregator:
     def __init__(self, config: Dict, ig_client=None):
         self.ig_client = ig_client
         self.cache = {}
-        self.cache_duration = 110  # ~2min — fresh data each loop (IG allows 30 req/min)
+        self.cache_duration = 55  # Just under 1min bar — every 60s poll gets fresh data
         self.providers = []
         self.fetch_stats = {
             "total_requests": 0,

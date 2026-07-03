@@ -28,6 +28,7 @@ from core.risk import size_by_invested_capital, daily_lockout
 from data.ig_price_bars import bars_from_ig
 from broker.ig_client import IGClient
 from broker.order_exec import enforce_market_rules, estimate_pip_value
+from broker.conditional_order_manager import ConditionalOrderManager
 from strategy.ai_pattern_recognizer import AIPatternRecognizer
 from strategy.fvg_strategy import FVGStrategy
 from strategy.ml_filter import MLDirectionalFilter
@@ -704,6 +705,29 @@ def main():
     # Initialize managers
     position_manager = PositionManager(log)
     trailing_manager = TrailingStopManager(ig_client=ig, log=log)  # ✅ Pass IG client
+
+    # Initialize Conditional Order Manager (if enabled in config)
+    cond_order_mgr = None
+    co_config = cfg.get("conditional_orders", {})
+    if co_config.get("enabled", False):
+        # Get sr_detector from ai_strategy (it owns the SupportResistanceDetector)
+        sr_detector = getattr(ai_strategy, 'sr_detector', None)
+        cond_order_mgr = ConditionalOrderManager(
+            ig_client=ig,
+            config=cfg,
+            position_manager=position_manager,
+            trailing_manager=trailing_manager,
+            sr_detector=sr_detector,
+            log=log,
+        )
+        if cond_order_mgr.enabled:
+            log.info("✓ Conditional Order Manager: ENABLED")
+        else:
+            log.warning("⚠ Conditional Order Manager: config validation failed, falling back to market orders")
+            cond_order_mgr = None
+    else:
+        log.info("✓ Conditional Order Manager: DISABLED (using market orders)")
+
     last_bar_time = {e: None for e in epics}
 
     # Get starting equity
@@ -732,6 +756,8 @@ def main():
 
             if os.environ.get("KILL_SWITCH", "0") == "1":
                 log.warning("⚠️ Kill switch activated")
+                if cond_order_mgr:
+                    cond_order_mgr.cancel_all_orders("kill_switch")
                 break
 
             # Sync positions from broker every loop, BEFORE epic processing
@@ -851,6 +877,8 @@ def main():
             # Check risk lockouts
             if daily_lockout(daily_pnl_pct, max_daily_loss_pct):
                 log.warning(f"🛑 Daily loss limit: {daily_pnl_pct:.2f}%")
+                if cond_order_mgr:
+                    cond_order_mgr.cancel_all_orders("daily_loss_limit")
                 time.sleep(600)
                 continue
 
@@ -1015,6 +1043,8 @@ def main():
                             # --- REAL-TIME PRICE VALIDATION ---
                             # Fetch live bid/offer from IG to ensure price hasn't moved
                             # too far from the analysis price (avoids stale entries)
+                            live_bid = 0
+                            live_offer = 0
                             try:
                                 live_market = ig.market_details(epic)
                                 live_bid = float(live_market.get('snapshot', {}).get('bid', 0))
@@ -1051,52 +1081,106 @@ def main():
                                 if use_trailing:
                                     log.info(f"   Trailing: Will activate after {stop_pts * trailing_activation_pct:.2f} pts profit")
 
-                                # Place order: with or without TP limit
-                                resp = ig.place_order(
-                                    epic,
-                                    direction,
-                                    adj_size,
-                                    stop_distance=stop_pts,
-                                    limit_distance=tp_pts if use_tp_limit else None,
-                                    tif=cfg["execution"]["time_in_force"]
-                                )
+                                # --- CONDITIONAL ORDER vs MARKET ORDER ---
+                                if cond_order_mgr and cond_order_mgr.enabled:
+                                    # Build sr_levels dict for ConditionalOrderManager
+                                    # Extract float levels from signal's sr_zones metadata
+                                    sr_meta = signal.get("meta", {}).get("sr_zones", {})
+                                    sr_levels_for_cond = {
+                                        "resistance": [z["level"] if isinstance(z, dict) else z
+                                                       for z in sr_meta.get("resistance", [])
+                                                       ] if "resistance" in sr_meta else [],
+                                        "support": [z["level"] if isinstance(z, dict) else z
+                                                    for z in sr_meta.get("support", [])
+                                                    ] if "support" in sr_meta else [],
+                                    }
+                                    # If sr_zones not in signal, try detecting from sr_detector
+                                    if not sr_levels_for_cond["resistance"] and not sr_levels_for_cond["support"]:
+                                        sr_det = getattr(ai_strategy, 'sr_detector', None)
+                                        if sr_det and df is not None and len(df) >= 50:
+                                            try:
+                                                detected = sr_det.detect_all_levels(df)
+                                                sr_levels_for_cond = {
+                                                    "resistance": [z["level"] for z in detected.get("resistance", [])],
+                                                    "support": [z["level"] for z in detected.get("support", [])],
+                                                }
+                                            except Exception:
+                                                pass
 
-                                deal_ref = resp.get('dealReference')
-                                log.info(f"✅ ORDER PLACED: {deal_ref}")
+                                    mid_price = (live_bid + live_offer) / 2 if live_bid and live_offer else current_price
 
-                                # Get actual dealId from confirmation
-                                try:
-                                    confirm = ig.confirm_deal(deal_ref)
-                                    deal_id = confirm.get('dealId', deal_ref)
-                                    deal_status = confirm.get('dealStatus', 'UNKNOWN')
-                                    log.info(f"✅ CONFIRMED: dealId={deal_id} | status={deal_status}")
-                                except Exception as e:
-                                    log.warning(f"⚠️ Could not confirm deal, using dealReference: {e}")
-                                    deal_id = deal_ref
-
-                                position_manager.add_position(
-                                    epic=epic,
-                                    deal_id=deal_id,
-                                    direction=direction,
-                                    size=adj_size,
-                                    entry_price=current_price,
-                                    stop=stop_pts,
-                                    tp=tp_pts if use_tp_limit else 0,
-                                    confidence=confidence,
-                                    patterns=patterns
-                                )
-
-                                # ✅ FIX: Initialize trailing stop with deal_id
-                                if use_trailing:
-                                    trailing_manager.initialize(
+                                    result = cond_order_mgr.process_signal(
                                         epic=epic,
-                                        deal_id=deal_id,  # ✅ Pass deal ID
-                                        entry_price=current_price,
                                         direction=direction,
-                                        stop_distance=stop_pts,
-                                        activation_pct=trailing_activation_pct,
-                                        trailing_pct=trailing_distance_pct
+                                        mid_price=mid_price,
+                                        sr_levels=sr_levels_for_cond,
+                                        stop_pts=stop_pts,
+                                        tp_pts=tp_pts if use_tp_limit else 0,
+                                        size=adj_size,
+                                        currency_code=mkt.get("instrument", {}).get("currencies", [{}])[0].get("code", "USD"),
+                                        confidence=confidence,
+                                        patterns=patterns,
+                                        atr_value=signal.get("meta", {}).get("atr_value", stop_pts),
                                     )
+
+                                    action = result.get("action", "")
+                                    if action == "placed":
+                                        log.info(f"✅ CONDITIONAL ORDER PLACED: {result['details'].get('deal_reference', '')}")
+                                    elif action == "fallback":
+                                        # Fallback already placed market order inside process_signal
+                                        log.info(f"📤 Fallback to market order (no S/R level)")
+                                    elif action == "rejected":
+                                        log.warning(f"⚠️ Conditional order rejected: {result['details'].get('reason', '')}")
+                                    elif action == "skipped":
+                                        log.info(f"⏭️ Conditional order skipped: {result['details'].get('reason', '')}")
+
+                                else:
+                                    # Existing market order logic
+                                    resp = ig.place_order(
+                                        epic,
+                                        direction,
+                                        adj_size,
+                                        stop_distance=stop_pts,
+                                        limit_distance=tp_pts if use_tp_limit else None,
+                                        tif=cfg["execution"]["time_in_force"]
+                                    )
+
+                                    deal_ref = resp.get('dealReference')
+                                    log.info(f"✅ ORDER PLACED: {deal_ref}")
+
+                                    # Get actual dealId from confirmation
+                                    try:
+                                        confirm = ig.confirm_deal(deal_ref)
+                                        deal_id = confirm.get('dealId', deal_ref)
+                                        deal_status = confirm.get('dealStatus', 'UNKNOWN')
+                                        log.info(f"✅ CONFIRMED: dealId={deal_id} | status={deal_status}")
+                                    except Exception as e:
+                                        log.warning(f"⚠️ Could not confirm deal, using dealReference: {e}")
+                                        deal_id = deal_ref
+
+                                    position_manager.add_position(
+                                        epic=epic,
+                                        deal_id=deal_id,
+                                        direction=direction,
+                                        size=adj_size,
+                                        entry_price=current_price,
+                                        stop=stop_pts,
+                                        tp=tp_pts if use_tp_limit else 0,
+                                        confidence=confidence,
+                                        patterns=patterns
+                                    )
+
+                                    # ✅ FIX: Initialize trailing stop with deal_id
+                                    if use_trailing:
+                                        trailing_manager.initialize(
+                                            epic=epic,
+                                            deal_id=deal_id,  # ✅ Pass deal ID
+                                            entry_price=current_price,
+                                            direction=direction,
+                                            stop_distance=stop_pts,
+                                            activation_pct=trailing_activation_pct,
+                                            trailing_pct=trailing_distance_pct
+                                        )
 
                             except Exception as e:
                                 log.exception(f"❌ ORDER FAILED {epic}: {e}")
@@ -1123,6 +1207,13 @@ def main():
                         log.warning("⚠ ML Filter: insufficient data for retraining")
                 except Exception as e:
                     log.error(f"✗ ML Filter retraining error: {e}")
+
+            # --- CONDITIONAL ORDER POLLING (every 60s cycle) ---
+            if cond_order_mgr and cond_order_mgr.enabled:
+                try:
+                    cond_order_mgr.poll_orders()
+                except Exception as e:
+                    log.error(f"Conditional order polling error: {e}")
 
             # Sleep between cycles — adaptive based on number of active symbols
             # The TwelveData provider internally calculates optimal interval

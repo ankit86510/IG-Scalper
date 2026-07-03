@@ -52,6 +52,12 @@ risk:
   use_dynamic_sizing: true
   max_size_multiple: 50
 
+conditional_orders:
+  enabled: true
+  buffer_points: 2.0                # Points beyond S/R level for entry (0.5–50.0)
+  order_expiry_seconds: 1800         # Auto-cancel unfilled orders after 5 min (60–86400)
+  max_entry_distance_points: 30.0   # Reject signal if entry > 30 pts from mid-price (1.0–200.0)
+
 execution:
   time_in_force: "FILL_OR_KILL"
   use_trailing_stop: true           # ✅ Enable trailing
