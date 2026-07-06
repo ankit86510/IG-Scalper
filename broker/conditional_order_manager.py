@@ -257,14 +257,24 @@ class ConditionalOrderManager:
             }
 
         # 7. Track the placed order
+        # 7. Confirm the deal to get the actual dealId (IG returns dealReference first)
         deal_ref = response.get("dealReference", "")
+        deal_id = deal_ref  # fallback if confirm fails
+        try:
+            confirm = self.ig_client.confirm_deal(deal_ref)
+            deal_id = confirm.get("dealId", deal_ref)
+        except Exception as e:
+            self.log.warning(
+                f"Could not confirm deal reference {deal_ref}: {e} — using dealReference as fallback"
+            )
+
         now_utc = datetime.now(timezone.utc)
         expiry_seconds = self.config["conditional_orders"]["order_expiry_seconds"]
         expiry_at = now_utc + timedelta(seconds=expiry_seconds)
 
         tracked = TrackedOrder(
             epic=epic,
-            deal_id=deal_ref,
+            deal_id=deal_id,
             direction=direction,
             entry_level=entry_level,
             stop_distance=stop_pts,
@@ -368,13 +378,17 @@ class ConditionalOrderManager:
         return (final_stop, tp_distance)
 
     def compute_expiry_timestamp(self) -> str:
-        """Compute goodTillDate as current UTC + order_expiry_seconds.
+        """Compute goodTillDate as current local time + order_expiry_seconds.
 
         Format: yyyy/MM/dd HH:mm:ss (IG API required format for working orders).
+        IG interprets goodTillDate in the account's timezone (London/Europe).
+        We use local time (Europe/Rome) which is close enough for expiry purposes.
         """
+        import pytz
         expiry_seconds = self.config["conditional_orders"]["order_expiry_seconds"]
-        now_utc = datetime.now(timezone.utc)
-        expiry_dt = now_utc + timedelta(seconds=expiry_seconds)
+        tz_rome = pytz.timezone("Europe/Rome")
+        now_local = datetime.now(tz_rome)
+        expiry_dt = now_local + timedelta(seconds=expiry_seconds)
         return expiry_dt.strftime("%Y/%m/%d %H:%M:%S")
 
     def build_order_payload(self, epic: str, direction: str, entry_level: float,
