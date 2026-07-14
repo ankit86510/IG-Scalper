@@ -301,6 +301,18 @@ class SentimentFilter:
                         max_requests_per_hour=max_requests_per_hour,
                     )
                 )
+
+            # ForexFactory Economic Calendar Source (always enabled, no API key needed)
+            ff_config = sources_config.get("forex_factory", {})
+            if ff_config.get("enabled", True):  # Enabled by default
+                proximity_hours = ff_config.get("proximity_hours", 2)
+                self._sources.append(
+                    ForexFactoryCalendarSource(
+                        proximity_hours=proximity_hours,
+                        timeout_seconds=ff_config.get("timeout_seconds", 10),
+                    )
+                )
+
         except Exception as exc:
             logger.error(
                 "SentimentFilter initialization failed, entering permanent pass-through mode: %s: %s",
@@ -311,7 +323,7 @@ class SentimentFilter:
             self._sources = []
 
         # Initialize weighted aggregator
-        default_weights = {"ig_client": 0.6, "news": 0.4}
+        default_weights = {"ig_client": 0.4, "news": 0.3, "forex_factory": 0.3}
         weights = config.get("source_weights", default_weights)
         self._aggregator = WeightedAggregator(weights=weights)
 
@@ -573,6 +585,105 @@ class SentimentFilter:
             })
 
 
+class ForexFactoryCalendarSource:
+    """Fetches high-impact USD economic events from ForexFactory calendar.
+
+    Implements the SentimentSource protocol. Checks for upcoming or recent
+    high-impact USD events and returns a sentiment score based on proximity
+    to major events. High-impact events create uncertainty → bullish Gold.
+
+    Uses the free faireconomy.media JSON endpoint (no API key required).
+    """
+
+    FF_CALENDAR_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
+
+    def __init__(self, proximity_hours: int = 2, timeout_seconds: int = 10) -> None:
+        """Initialize the ForexFactory calendar source.
+
+        Args:
+            proximity_hours: Hours before/after an event to consider it "active".
+            timeout_seconds: HTTP request timeout.
+        """
+        self._proximity_hours = proximity_hours
+        self._timeout_seconds = timeout_seconds
+
+    @property
+    def name(self) -> str:
+        """Unique identifier for this sentiment source."""
+        return "forex_factory"
+
+    def fetch_score(self) -> float | None:
+        """Fetch current sentiment score based on proximity to high-impact USD events.
+
+        Returns:
+            Positive score (bullish Gold) when high-impact event is imminent/recent
+            (uncertainty drives safe-haven demand). None if no relevant events or error.
+        """
+        try:
+            response = requests.get(self.FF_CALENDAR_URL, timeout=self._timeout_seconds)
+            if response.status_code != 200:
+                logger.warning(
+                    "ForexFactoryCalendar: API returned status %d", response.status_code
+                )
+                return None
+
+            events = response.json()
+            if not events:
+                return None
+
+            now_utc = datetime.now(timezone.utc)
+            proximity_window = timedelta(hours=self._proximity_hours)
+
+            # Filter USD high-impact events within proximity window
+            active_events = []
+            for event in events:
+                if event.get("country") != "USD":
+                    continue
+                if event.get("impact") not in ("High", "Medium"):
+                    continue
+
+                event_date_str = event.get("date", "")
+                if not event_date_str:
+                    continue
+
+                try:
+                    # Format: "2026-07-08T14:00:00-04:00"
+                    event_dt = datetime.fromisoformat(event_date_str)
+                    event_dt_utc = event_dt.astimezone(timezone.utc)
+                except (ValueError, TypeError):
+                    continue
+
+                # Check if event is within proximity window (before or after)
+                time_diff = abs((event_dt_utc - now_utc).total_seconds())
+                if time_diff <= proximity_window.total_seconds():
+                    impact_weight = 1.0 if event.get("impact") == "High" else 0.5
+                    # Closer to event = stronger signal
+                    proximity_factor = 1.0 - (time_diff / proximity_window.total_seconds())
+                    active_events.append((event, impact_weight * proximity_factor))
+
+            if not active_events:
+                return None
+
+            # High-impact USD events create uncertainty → bullish Gold (safe haven)
+            total_weight = sum(w for _, w in active_events)
+            # Score between 0.1 and 0.4 based on event proximity and impact
+            score = min(0.4, total_weight * 0.2)
+
+            event_names = [e.get("title", "?") for e, _ in active_events[:3]]
+            logger.info(
+                "ForexFactoryCalendar: %d active USD events (score=%.3f): %s",
+                len(active_events), score, ", ".join(event_names),
+            )
+            return score
+
+        except requests.Timeout:
+            logger.warning("ForexFactoryCalendar: request timed out")
+            return None
+        except Exception as exc:
+            logger.warning("ForexFactoryCalendar: error: %s", exc)
+            return None
+
+
 class AlphaVantageNewsSource:
     """Fetches Gold-related news sentiment from Alpha Vantage News & Sentiment API.
 
@@ -675,11 +786,21 @@ class AlphaVantageNewsSource:
             url = (
                 f"https://www.alphavantage.co/query"
                 f"?function=NEWS_SENTIMENT"
-                f"&tickers=FOREX:XAU"
+                f"&tickers=FOREX:USD"
                 f"&apikey={self._api_key}"
             )
 
             response = requests.get(url, timeout=self._timeout_seconds)
+            self._record_request()
+
+            # Second call: economy_macro topic for geopolitical/war news
+            geo_url = (
+                f"https://www.alphavantage.co/query"
+                f"?function=NEWS_SENTIMENT"
+                f"&topics=economy_macro"
+                f"&apikey={self._api_key}"
+            )
+            geo_response = requests.get(geo_url, timeout=self._timeout_seconds)
             self._record_request()
 
             if response.status_code != 200:
@@ -714,19 +835,102 @@ class AlphaVantageNewsSource:
                     continue
 
                 if article_dt >= cutoff:
-                    score = article.get("overall_sentiment_score")
-                    if score is not None:
-                        try:
-                            qualifying_articles.append(float(score))
-                        except (ValueError, TypeError):
-                            continue
+                    # Extract USD-specific ticker sentiment (not overall)
+                    # Bullish USD → bearish Gold, so we INVERT the score
+                    for ticker_info in article.get("ticker_sentiment", []):
+                        ticker = ticker_info.get("ticker", "")
+                        if "USD" in ticker.upper():
+                            score = ticker_info.get("ticker_sentiment_score")
+                            if score is not None:
+                                try:
+                                    # Invert: bullish USD (+) → bearish Gold (-)
+                                    qualifying_articles.append(-float(score))
+                                except (ValueError, TypeError):
+                                    continue
+                            break
 
             if len(qualifying_articles) < self._min_articles:
                 logger.debug(
-                    "AlphaVantageNewsSource: only %d articles (need %d)",
+                    "AlphaVantageNewsSource: only %d USD articles (need %d)",
                     len(qualifying_articles),
                     self._min_articles,
                 )
+                # Fall through to geopolitical check even if USD articles insufficient
+
+            # --- Geopolitical / war news (safe-haven demand → bullish Gold) ---
+            # Scan economy_macro feed for conflict/war keywords
+            # Geopolitical tension is always bullish for Gold regardless of USD direction
+            # Use TWO tiers: strong keywords (always match) and weak keywords (need 2+ to match)
+            strong_geo_keywords = (
+                "missile", "invasion", "nuclear", "bomb", "troops",
+                "nato", "weapon", "terror", "strait", "hormuz",
+                "iran", "airstrike", "ceasefire", "escalation",
+            )
+            weak_geo_keywords = (
+                "war", "conflict", "strike", "military", "sanction",
+                "tension", "escalat", "attack", "defense", "geopolit",
+                "tariff", "embargo", "russia", "china",
+            )
+            # Exclude false positives (stock "price war", "trade war" in non-geo context)
+            false_positive_phrases = (
+                "price war", "streaming war", "browser war", "format war",
+                "star wars", "bidding war", "turf war", "war chest",
+            )
+            geo_boost = 0.0
+            geo_count = 0
+
+            geo_feed = geo_response.json().get("feed", []) if geo_response.status_code == 200 else []
+
+            for article in geo_feed:
+                title = article.get("title", "").lower()
+                summary = article.get("summary", "").lower()
+                text_to_check = title + " " + summary
+
+                # Skip false positives
+                if any(fp in text_to_check for fp in false_positive_phrases):
+                    continue
+
+                # Check strong keywords (any single match qualifies)
+                strong_matches = [kw for kw in strong_geo_keywords if kw in text_to_check]
+                weak_matches = [kw for kw in weak_geo_keywords if kw in text_to_check]
+
+                # Qualify if: any strong keyword OR 2+ weak keywords
+                is_geopolitical = len(strong_matches) > 0 or len(weak_matches) >= 2
+
+                if is_geopolitical:
+                    time_published = article.get("time_published", "")
+                    if not time_published:
+                        continue
+                    try:
+                        article_dt = datetime.strptime(
+                            time_published, "%Y%m%dT%H%M%S"
+                        ).replace(tzinfo=timezone.utc)
+                    except (ValueError, TypeError):
+                        continue
+
+                    if article_dt >= cutoff:
+                        overall = article.get("overall_sentiment_score")
+                        if overall is not None:
+                            try:
+                                # Negative overall sentiment (fear/conflict) → positive for Gold
+                                # Positive geo news (de-escalation) → slightly negative for Gold
+                                geo_boost += -float(overall)
+                                geo_count += 1
+                            except (ValueError, TypeError):
+                                continue
+
+            if geo_count > 0:
+                # Average geo score — not capped, strong geopolitical events should dominate
+                avg_geo = geo_boost / geo_count
+                # Weight geo signal: more articles = stronger conviction
+                geo_weight = min(1.0, geo_count / 5.0)  # Full weight at 5+ articles
+                qualifying_articles.append(avg_geo * geo_weight)
+                logger.debug(
+                    "AlphaVantageNewsSource: %d geopolitical articles, avg_score=%.4f, weight=%.2f",
+                    geo_count, avg_geo, geo_weight,
+                )
+
+            if not qualifying_articles:
                 return None
 
             # Compute weighted average (equal weight per article)

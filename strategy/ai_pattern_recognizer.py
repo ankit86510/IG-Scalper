@@ -214,6 +214,7 @@ class AIPatternRecognizer(Strategy):
                  stop_multiplier: float = 1.5,
                  rr_take: float = 2.0,
                  confidence_threshold: float = 0.30,
+                 news_proximity_threshold: float = 0.40,
                  lookback_candles: int = 50,
                  cfd_mode: bool = True,
                  enable_sr_detection: bool = True,
@@ -223,6 +224,7 @@ class AIPatternRecognizer(Strategy):
         self.stop_multiplier = stop_multiplier
         self.rr_take = rr_take
         self.confidence_threshold = confidence_threshold
+        self.news_proximity_threshold = news_proximity_threshold
         self.lookback = lookback_candles
         self.cfd_mode = cfd_mode
         self.enable_sr_detection = enable_sr_detection
@@ -653,8 +655,36 @@ class AIPatternRecognizer(Strategy):
         safe_log(self.logger, 'info', "-" * 60)
 
         if decision["confidence"] < self.confidence_threshold:
-            log_warning(self.logger, f"Confidence {decision['confidence']:.1%} below threshold - NO TRADE")
-            return None
+            # Check if a high-impact ForexFactory event is imminent — lower threshold
+            effective_threshold = self.confidence_threshold
+            try:
+                import requests as _req
+                _r = _req.get("https://nfs.faireconomy.media/ff_calendar_thisweek.json", timeout=5)
+                if _r.status_code == 200:
+                    from datetime import timezone as _tz, timedelta as _td
+                    _now = datetime.now(pytz.UTC)
+                    _window = _td(hours=2)
+                    for _ev in _r.json():
+                        if _ev.get("country") != "USD" or _ev.get("impact") != "High":
+                            continue
+                        try:
+                            _edt = datetime.fromisoformat(_ev["date"]).astimezone(pytz.UTC)
+                        except Exception:
+                            continue
+                        if abs((_edt - _now).total_seconds()) <= _window.total_seconds():
+                            effective_threshold = self.news_proximity_threshold
+                            safe_log(self.logger, 'info',
+                                     f"🗓️ High-impact event nearby: {_ev.get('title')} — "
+                                     f"threshold lowered to {effective_threshold:.0%}")
+                            break
+            except Exception:
+                pass
+
+            if decision["confidence"] < effective_threshold:
+                log_warning(self.logger,
+                            f"Confidence {decision['confidence']:.1%} below threshold "
+                            f"({effective_threshold:.0%}) - NO TRADE")
+                return None
 
         stop_pts = max(atr_val * self.stop_multiplier, self.min_stop_pts)
         tp_pts = stop_pts * self.rr_take

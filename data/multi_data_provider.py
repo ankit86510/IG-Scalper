@@ -533,10 +533,13 @@ class SmartDataAggregator:
         # Lightstreamer NOT used as data provider — TwelveData/IG REST are primary.
         # Lightstreamer module remains available for live tick monitoring separately.
 
-        # IG REST API — primary source (no external dependency, direct from broker)
+        # IG REST API — DISABLED: Demo account historical price limit exceeded.
+        # Uncomment when limit renews.
+        # if ig_client:
+        #     self.providers.append(("IG", IGPriceProvider(ig_client)))
+        #     log_success(logger, "IG Price provider initialized (direct broker data, priority 0)")
         if ig_client:
-            self.providers.append(("IG", IGPriceProvider(ig_client)))
-            log_success(logger, "IG Price provider initialized (direct broker data, priority 0)")
+            log_warning(logger, "IG Price provider SKIPPED (demo historical price limit exceeded)")
 
         # TwelveData — secondary source, spot prices for all asset classes
         if config.get("twelve_data_key"):
