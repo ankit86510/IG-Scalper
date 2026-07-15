@@ -82,7 +82,7 @@ ai_strategy:
   stop_multiplier: 1.5         # Tighter stops — high vol = fast moves, quick in/out
   min_stop_pts: 8.0            # Wider floor for Gold noise during volatile sessions
   rr_take: 3.0                 # 3:1 RR — aggressive upside targeting
-  lookback_candles: 250        # Use max TwelveData bars
+  lookback_candles: 200        # IG prices returns max 200 bars — use 200 as minimum
 
   # Pattern weights (future enhancement)
   pattern_weights:
