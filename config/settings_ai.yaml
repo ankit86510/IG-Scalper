@@ -29,8 +29,8 @@ finnhub:
 ml_filter:
   enabled: true
   probability_threshold: 0.50
-  rolling_window_bars: 1000
-  retrain_interval_hours: 2
+  rolling_window_bars: 3000
+  retrain_interval_hours: 1
   model_path: "data/ml_model.joblib"
   model_type: "logistic_regression"  # or "random_forest"
 
