@@ -656,15 +656,32 @@ class AIPatternRecognizer(Strategy):
 
         if decision["confidence"] < self.confidence_threshold:
             # Check if a high-impact ForexFactory event is imminent — lower threshold
+            # Cache the calendar data for 30 min to avoid rate limiting (429)
             effective_threshold = self.confidence_threshold
             try:
-                import requests as _req
-                _r = _req.get("https://nfs.faireconomy.media/ff_calendar_thisweek.json", timeout=5)
-                if _r.status_code == 200:
+                import time as _time
+                _now_ts = _time.time()
+                _cache_ttl = 1800  # 30 minutes
+
+                if (not hasattr(self, '_ff_cache') or
+                        self._ff_cache is None or
+                        _now_ts - self._ff_cache_time > _cache_ttl):
+                    import requests as _req
+                    _r = _req.get("https://nfs.faireconomy.media/ff_calendar_thisweek.json", timeout=5)
+                    if _r.status_code == 200:
+                        self._ff_cache = _r.json()
+                        self._ff_cache_time = _now_ts
+                    else:
+                        # Rate limited or error — keep old cache if available
+                        if not hasattr(self, '_ff_cache'):
+                            self._ff_cache = None
+                            self._ff_cache_time = _now_ts
+
+                if self._ff_cache:
                     from datetime import timezone as _tz, timedelta as _td
                     _now = datetime.now(pytz.UTC)
                     _window = _td(hours=2)
-                    for _ev in _r.json():
+                    for _ev in self._ff_cache:
                         if _ev.get("country") != "USD" or _ev.get("impact") != "High":
                             continue
                         try:
