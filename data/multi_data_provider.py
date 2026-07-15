@@ -533,31 +533,69 @@ class SmartDataAggregator:
         # Lightstreamer NOT used as data provider — TwelveData/IG REST are primary.
         # Lightstreamer module remains available for live tick monitoring separately.
 
-        # IG REST API — DISABLED: Demo account historical price limit exceeded.
-        # Uncomment when limit renews.
-        # if ig_client:
-        #     self.providers.append(("IG", IGPriceProvider(ig_client)))
-        #     log_success(logger, "IG Price provider initialized (direct broker data, priority 0)")
+        # IG REST API — hourly rotation with TwelveData
+        # Even hours (0,2,4...): IG is primary. Odd hours (1,3,5...): TwelveData is primary.
+        self._ig_provider = None
+        self._twelvedata_provider = None
         if ig_client:
-            log_warning(logger, "IG Price provider SKIPPED (demo historical price limit exceeded)")
+            self._ig_provider = IGPriceProvider(ig_client)
+            log_success(logger, "IG Price provider initialized (hourly rotation)")
 
         # TwelveData — secondary source, spot prices for all asset classes
         if config.get("twelve_data_key"):
-            self.providers.append(("TwelveData", TwelveDataProvider(config["twelve_data_key"])))
-            log_success(logger, "TwelveData provider initialized (spot prices, priority 1)")
+            self._twelvedata_provider = TwelveDataProvider(config["twelve_data_key"])
+            log_success(logger, "TwelveData provider initialized (hourly rotation)")
+
+        # Build provider list based on current hour (rotates every hour)
+        self._rebuild_provider_list()
 
         # Yahoo Finance — forex/indices only; futures excluded in symbol map
         self.providers.append(("YahooFinance", YahooFinanceProvider()))
-        log_success(logger, "Yahoo Finance provider initialized (forex/indices only, priority 2)")
+        log_success(logger, "Yahoo Finance provider initialized (forex/indices only, fallback)")
 
         # AlphaVantage — rate-limited backup
         if config.get("alpha_vantage_key"):
             self.providers.append(("AlphaVantage", AlphaVantageProvider(config["alpha_vantage_key"])))
-            log_success(logger, "AlphaVantage provider initialized (priority 3)")
+            log_success(logger, "AlphaVantage provider initialized (last resort)")
 
         self.symbol_map = self._build_symbol_map()
         safe_log(logger, 'info', f"Loaded {len(self.symbol_map)} symbol mappings")
         safe_log(logger, 'info', "=" * 80)
+
+    def _rebuild_provider_list(self) -> None:
+        """Rebuild ordered provider list based on current hour.
+
+        Even hours (0,2,4,...): IG first, TwelveData second.
+        Odd hours  (1,3,5,...): TwelveData first, IG second.
+        Rotates every hour to spread API budget across both sources.
+        """
+        import datetime as _dt
+        current_hour = _dt.datetime.now().hour
+        ig_turn = (current_hour % 2 == 0)
+
+        # Remove any existing IG/TwelveData entries (keep Yahoo/AlphaVantage)
+        self.providers = [
+            (name, p) for name, p in self.providers
+            if name not in ("IG", "TwelveData")
+        ]
+
+        if ig_turn:
+            if self._ig_provider:
+                self.providers.insert(0, ("IG", self._ig_provider))
+            if self._twelvedata_provider:
+                self.providers.insert(1 if self._ig_provider else 0,
+                                      ("TwelveData", self._twelvedata_provider))
+            active = "IG" if self._ig_provider else "TwelveData"
+        else:
+            if self._twelvedata_provider:
+                self.providers.insert(0, ("TwelveData", self._twelvedata_provider))
+            if self._ig_provider:
+                self.providers.insert(1 if self._twelvedata_provider else 0,
+                                      ("IG", self._ig_provider))
+            active = "TwelveData" if self._twelvedata_provider else "IG"
+
+        safe_log(logger, 'info',
+                 f"📡 Data provider rotation: hour={current_hour} → primary={active}")
 
     def _build_symbol_map(self) -> Dict:
         return {
@@ -670,6 +708,13 @@ class SmartDataAggregator:
             return cached_data["data"]
 
         safe_log(logger, 'info', "[CACHE MISS] Fetching fresh data...")
+
+        # Check if hour has changed — rotate providers if needed
+        import datetime as _dt
+        current_hour = _dt.datetime.now().hour
+        if not hasattr(self, '_last_rotation_hour') or self._last_rotation_hour != current_hour:
+            self._last_rotation_hour = current_hour
+            self._rebuild_provider_list()
 
         mappings = self.symbol_map.get(ig_epic, {})
         if not mappings:
