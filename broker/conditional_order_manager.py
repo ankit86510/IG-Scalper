@@ -50,6 +50,10 @@ class ConditionalOrderManager:
         self.tracked_orders: Dict[str, TrackedOrder] = {}  # key = epic
         self.active_signals: Dict[str, str] = {}  # key = epic, value = direction
 
+        # Sync existing working orders from IG on startup
+        if self.enabled:
+            self._sync_existing_orders()
+
     def process_signal(self, epic: str, direction: str, mid_price: float,
                        sr_levels: dict, stop_pts: float, tp_pts: float,
                        size: float, currency_code: str, confidence: float,
@@ -530,7 +534,7 @@ class ConditionalOrderManager:
             self.trailing_manager.initialize(
                 epic=epic,
                 deal_id=tracked.deal_id,
-                fill_price=tracked.entry_level,
+                entry_price=tracked.entry_level,
                 direction=tracked.direction,
                 stop_distance=tracked.stop_distance,
                 activation_pct=execution_config.get("trailing_activation_pct", 0.5),
@@ -653,3 +657,79 @@ class ConditionalOrderManager:
             return False
 
         return True
+
+    def _sync_existing_orders(self) -> None:
+        """Sync working orders already on IG into internal tracking state.
+
+        Called on startup to pick up orders from previous sessions that
+        are still pending. This prevents:
+        - Duplicate order placement for the same epic
+        - Orphaned orders that never get monitored for fill/expiry
+        """
+        try:
+            response = self.ig_client.get_working_orders()
+            ig_orders = response.get("workingOrders", [])
+
+            if not ig_orders:
+                self.log.info("📋 Working order sync: no existing orders on IG")
+                return
+
+            synced = 0
+            for order_entry in ig_orders:
+                order_data = order_entry.get("workingOrderData", {})
+                market_data = order_entry.get("marketData", {})
+
+                epic = order_data.get("epic", "")
+                deal_id = order_data.get("dealId", "")
+                direction = order_data.get("direction", "")
+                level = order_data.get("level") or order_data.get("orderLevel")
+                size = order_data.get("size") or order_data.get("orderSize")
+                currency_code = order_data.get("currencyCode", "USD")
+                good_till_date = order_data.get("goodTillDate", "")
+
+                if not epic or not deal_id or not direction:
+                    continue
+
+                # Parse goodTillDate to get expiry
+                expiry_at = datetime.now(timezone.utc) + timedelta(
+                    seconds=self.config["conditional_orders"]["order_expiry_seconds"]
+                )
+                if good_till_date:
+                    try:
+                        # IG format: "2026/07/15 12:26:27"
+                        import pytz
+                        expiry_at = datetime.strptime(
+                            good_till_date, "%Y/%m/%d %H:%M:%S"
+                        ).replace(tzinfo=pytz.timezone("Europe/Rome")).astimezone(timezone.utc)
+                    except Exception:
+                        pass
+
+                # Create TrackedOrder from IG data
+                tracked = TrackedOrder(
+                    epic=epic,
+                    deal_id=deal_id,
+                    direction=direction,
+                    entry_level=float(level) if level is not None else 0.0,
+                    stop_distance=float(order_data.get("stopDistance") or 0) or 5.0,
+                    tp_distance=float(order_data.get("limitDistance") or 0) or None,
+                    size=float(size) if size is not None else 1.0,
+                    currency_code=currency_code,
+                    placed_at=datetime.now(timezone.utc),  # Approximate
+                    expiry_at=expiry_at,
+                    confidence=0.0,  # Unknown from previous session
+                    patterns=[],
+                )
+
+                self.tracked_orders[epic] = tracked
+                self.active_signals[epic] = direction
+                synced += 1
+
+                self.log.info(
+                    f"📋 Synced existing order: epic={epic}, direction={direction}, "
+                    f"level={level}, deal_id={deal_id}"
+                )
+
+            self.log.info(f"📋 Working order sync complete: {synced} orders imported")
+
+        except Exception as e:
+            self.log.warning(f"⚠ Working order sync failed (non-fatal): {e}")
