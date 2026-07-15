@@ -470,19 +470,44 @@ class ConditionalOrderManager:
         # Step 3: Check each tracked order against IG state
         epics_to_remove = []
 
+        # Also build a lookup by epic+direction from IG orders for cross-reference
+        ig_orders_by_epic = {}
+        for deal_id, order_data in ig_orders.items():
+            epic_key = order_data.get("epic", "")
+            if epic_key:
+                ig_orders_by_epic.setdefault(epic_key, []).append(order_data)
+
         for epic, tracked in list(self.tracked_orders.items()):
             if tracked.deal_id not in ig_orders:
-                # Order no longer on IG — either filled or expired/cancelled
-                if epic in self.position_manager.positions:
+                # Our tracked dealId is not in IG list
+                # BUT the order might still exist under a different dealId
+                # (happens when confirm_deal failed and we stored dealReference)
+                ig_epic_orders = ig_orders_by_epic.get(epic, [])
+                matching_order = None
+                for od in ig_epic_orders:
+                    if od.get("direction") == tracked.direction:
+                        matching_order = od
+                        break
+
+                if matching_order:
+                    # Order still exists on IG under a different dealId — update tracking
+                    new_deal_id = matching_order.get("dealId", "")
+                    self.log.info(
+                        f"📋 Updated tracked dealId: {epic} {tracked.deal_id} → {new_deal_id}"
+                    )
+                    tracked.deal_id = new_deal_id
+                    # Don't remove — it's still pending
+                elif epic in self.position_manager.positions:
                     # Position exists → treat as FILLED → call _handle_fill
                     self._handle_fill(epic, tracked)
+                    epics_to_remove.append(epic)
                 else:
-                    # No position → treat as EXPIRED/CANCELLED (Req 3.3, 8.3)
+                    # No position AND no matching order on IG → truly expired
                     self.log.info(
                         f"Conditional order expired/cancelled: epic={epic}, "
                         f"reason=expired, unfilled_entry_level={tracked.entry_level}"
                     )
-                epics_to_remove.append(epic)
+                    epics_to_remove.append(epic)
             else:
                 # Order still pending on IG — check for signal reversal (Req 4.7)
                 current_signal = self.active_signals.get(epic)
