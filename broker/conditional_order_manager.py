@@ -382,17 +382,14 @@ class ConditionalOrderManager:
         return (final_stop, tp_distance)
 
     def compute_expiry_timestamp(self) -> str:
-        """Compute goodTillDate as current local time + order_expiry_seconds.
+        """Compute goodTillDate as current UTC + order_expiry_seconds.
 
         Format: yyyy/MM/dd HH:mm:ss (IG API required format for working orders).
-        IG interprets goodTillDate in the account's timezone (London/Europe).
-        We use local time (Europe/Rome) which is close enough for expiry purposes.
+        IG interprets goodTillDate as UTC.
         """
-        import pytz
         expiry_seconds = self.config["conditional_orders"]["order_expiry_seconds"]
-        tz_rome = pytz.timezone("Europe/Rome")
-        now_local = datetime.now(tz_rome)
-        expiry_dt = now_local + timedelta(seconds=expiry_seconds)
+        now_utc = datetime.now(timezone.utc)
+        expiry_dt = now_utc + timedelta(seconds=expiry_seconds)
         return expiry_dt.strftime("%Y/%m/%d %H:%M:%S")
 
     def build_order_payload(self, epic: str, direction: str, entry_level: float,
