@@ -525,21 +525,39 @@ class SmartDataAggregator:
         }
 
         self.tz_rome = pytz.timezone('Europe/Rome')
+        self._ls_provider = None  # Lightstreamer provider (primary, zero cost)
 
         safe_log(logger, 'info', "=" * 80)
         safe_log(logger, 'info', "Initializing Smart Data Aggregator")
         safe_log(logger, 'info', "=" * 80)
 
-        # Lightstreamer NOT used as data provider — TwelveData/IG REST are primary.
-        # Lightstreamer module remains available for live tick monitoring separately.
+        # --- LIGHTSTREAMER: Primary data source (zero API cost, real-time) ---
+        # Seeds history once at startup, then streams live bars
+        if ig_client and hasattr(ig_client, 'ls_endpoint') and ig_client.ls_endpoint:
+            try:
+                from data.lightstreamer_provider import LightstreamerProvider
+                self._ls_provider = LightstreamerProvider(
+                    ls_endpoint=ig_client.ls_endpoint,
+                    cst=ig_client.cst,
+                    x_security_token=ig_client.x_security_token,
+                    ig_client=ig_client,
+                )
+                if self._ls_provider.is_connected():
+                    log_success(logger, "Lightstreamer provider CONNECTED (primary, zero cost)")
+                else:
+                    log_warning(logger, "Lightstreamer connection failed — will use REST fallback")
+                    self._ls_provider = None
+            except ImportError:
+                log_warning(logger, "lightstreamer-client-lib not installed — using REST providers")
+            except Exception as e:
+                log_warning(logger, f"Lightstreamer init failed: {e} — using REST fallback")
 
-        # IG REST API — hourly rotation with TwelveData
-        # Even hours (0,2,4...): IG is primary. Odd hours (1,3,5...): TwelveData is primary.
+        # IG REST API — hourly rotation with TwelveData (fallback when LS has no data)
         self._ig_provider = None
         self._twelvedata_provider = None
         if ig_client:
             self._ig_provider = IGPriceProvider(ig_client)
-            log_success(logger, "IG Price provider initialized (hourly rotation)")
+            log_success(logger, "IG Price provider initialized (REST fallback)")
 
         # TwelveData — secondary source, spot prices for all asset classes
         if config.get("twelve_data_key"):
@@ -709,6 +727,31 @@ class SmartDataAggregator:
 
         safe_log(logger, 'info', "[CACHE MISS] Fetching fresh data...")
 
+        # --- LIGHTSTREAMER: Try first (zero cost, real-time) ---
+        if self._ls_provider and self._ls_provider.is_connected():
+            try:
+                df = self._ls_provider.get_bars(ig_epic, timeframe, limit)
+                if not df.empty and len(df) >= 10:
+                    safe_log(logger, 'info',
+                             f"[LIGHTSTREAMER] {len(df)} bars (live, zero cost)")
+                    self.fetch_stats["successful_fetches"] += 1
+                    self.fetch_stats["provider_usage"]["Lightstreamer"] = \
+                        self.fetch_stats["provider_usage"].get("Lightstreamer", 0) + 1
+                    # Cache the result
+                    self.cache[cache_key] = {
+                        "data": df,
+                        "timestamp": time.time(),
+                        "source": "Lightstreamer",
+                    }
+                    return df
+                else:
+                    safe_log(logger, 'debug',
+                             f"[LIGHTSTREAMER] Insufficient bars ({len(df) if not df.empty else 0})"
+                             f" — falling back to REST")
+            except Exception as e:
+                safe_log(logger, 'debug', f"[LIGHTSTREAMER] Error: {e} — falling back to REST")
+
+        # --- REST FALLBACK: hourly rotation IG/TwelveData ---
         # Check if hour has changed — rotate providers if needed
         import datetime as _dt
         current_hour = _dt.datetime.now().hour
