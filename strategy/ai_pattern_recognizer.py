@@ -230,10 +230,10 @@ class AIPatternRecognizer(Strategy):
         self.enable_sr_detection = enable_sr_detection
         self.min_stop_pts = min_stop_pts
 
-        # CFD-specific thresholds
+        # CFD-specific thresholds — relaxed for 1-min Gold
         if cfd_mode:
-            self.min_body_ratio = 0.15
-            self.min_shadow_ratio = 1.5
+            self.min_body_ratio = 0.10       # Lower: 1-min bars have tiny bodies
+            self.min_shadow_ratio = 1.2      # Lower: less extreme shadows needed
             self.pattern_confidence_multiplier = 1.3
             self.min_movement_pct = 0.005
         else:
@@ -247,7 +247,7 @@ class AIPatternRecognizer(Strategy):
 
         if enable_sr_detection:
             self.sr_detector = SupportResistanceDetector(
-                lookback_periods=100, min_touches=2, zone_thickness_pct=0.003)
+                lookback_periods=200, min_touches=2, zone_thickness_pct=0.003)
         else:
             self.sr_detector = None
 
@@ -575,8 +575,18 @@ class AIPatternRecognizer(Strategy):
         if total_score == 0:
             return {"confidence": 0.0, "direction": "NEUTRAL", "score_breakdown": {}}
 
+        # Confidence formula: normalized directional strength
+        # Removed the "+1" cap that was preventing confidence from reaching 60%+
         divisor = 0.8 if self.cfd_mode else 1.0
-        confidence = max(bullish_score, bearish_score) / (total_score * divisor + 1)
+        if total_score > 0:
+            # How dominant is the winning direction? (0.5 = even, 1.0 = full agreement)
+            dominance = max(bullish_score, bearish_score) / total_score
+            # Scale by signal strength (total_score represents conviction)
+            strength_factor = min(1.0, total_score / (1.5 * divisor))
+            confidence = dominance * strength_factor
+        else:
+            confidence = 0.0
+
         direction = "BUY" if bullish_score > bearish_score else "SELL"
 
         return {
@@ -589,8 +599,15 @@ class AIPatternRecognizer(Strategy):
             }
         }
 
-    def on_bar(self, df: pd.DataFrame) -> Optional[Dict]:
-        """Main analysis entry point with S/R integration"""
+    def on_bar(self, df: pd.DataFrame, df_5min: pd.DataFrame = None,
+              df_15min: pd.DataFrame = None) -> Optional[Dict]:
+        """Main analysis entry point with S/R integration and multi-timeframe confirmation.
+
+        Args:
+            df: Primary 1-min DataFrame for entry timing and patterns
+            df_5min: Optional 5-min DataFrame for momentum confirmation
+            df_15min: Optional 15-min DataFrame for trend direction confirmation
+        """
         rome_time = self.get_rome_time()
 
         safe_log(self.logger, 'info', "=" * 60)
@@ -654,6 +671,36 @@ class AIPatternRecognizer(Strategy):
                  f"[DECISION] {decision['direction']} with {decision['confidence']:.1%} confidence")
         safe_log(self.logger, 'info', "-" * 60)
 
+        # Require at least 1 candlestick/chart pattern for a valid signal
+        # Momentum + trend alone is not a reliable entry trigger
+        if len(patterns) == 0:
+            log_warning(self.logger, "No patterns detected — NO TRADE (require at least 1 pattern)")
+            return None
+
+        # --- MULTI-TIMEFRAME CONFIRMATION ---
+        # 5-min momentum must agree with 1-min signal direction
+        # 15-min trend must agree with 1-min signal direction
+        if df_5min is not None and len(df_5min) >= 20:
+            mtf_momentum = self.analyze_momentum(df_5min)
+            if mtf_momentum["direction"] != "NEUTRAL" and mtf_momentum["direction"] != decision["direction"].replace("BUY", "BULLISH").replace("SELL", "BEARISH"):
+                safe_log(self.logger, 'info',
+                         f"⛔ 5min momentum ({mtf_momentum['direction']}) opposes "
+                         f"1min signal ({decision['direction']}) — NO TRADE")
+                return None
+            safe_log(self.logger, 'info',
+                     f"✓ 5min momentum: {mtf_momentum['direction']} (confirms {decision['direction']})")
+
+        if df_15min is not None and len(df_15min) >= 25:
+            mtf_trend = self.detect_trend_strength(df_15min)
+            if mtf_trend["direction"] != "NEUTRAL" and mtf_trend["direction"] != decision["direction"].replace("BUY", "BULLISH").replace("SELL", "BEARISH"):
+                safe_log(self.logger, 'info',
+                         f"⛔ 15min trend ({mtf_trend['direction']}) opposes "
+                         f"1min signal ({decision['direction']}) — NO TRADE")
+                return None
+            safe_log(self.logger, 'info',
+                     f"✓ 15min trend: {mtf_trend['direction']} (confirms {decision['direction']})")
+        # --- END MULTI-TIMEFRAME CONFIRMATION ---
+
         if decision["confidence"] < self.confidence_threshold:
             # Check if a high-impact ForexFactory event is imminent — lower threshold
             # Cache the calendar data for 30 min to avoid rate limiting (429)
@@ -704,6 +751,18 @@ class AIPatternRecognizer(Strategy):
                 return None
 
         stop_pts = max(atr_val * self.stop_multiplier, self.min_stop_pts)
+
+        # Dynamic stop scaling: widen stop in high volatility to avoid premature hits
+        # ATR percentile is passed via the meta from the runner's volatility filter
+        # Fallback: if ATR is very high relative to price, scale up
+        price = df['close'].iloc[-2]
+        atr_pct = atr_val / price if price > 0 else 0
+        if atr_pct > 0.001:  # ATR > 0.1% of price = high vol
+            vol_multiplier = min(2.0, 1.0 + (atr_pct - 0.001) / 0.001)
+            stop_pts = stop_pts * vol_multiplier
+            safe_log(self.logger, 'info',
+                     f"📊 High volatility stop scaling: ×{vol_multiplier:.2f} → stop={stop_pts:.2f} pts")
+
         tp_pts = stop_pts * self.rr_take
 
         sr_levels = None
@@ -726,55 +785,21 @@ class AIPatternRecognizer(Strategy):
                     dist_to_support = current_price - nearest_support
                     dist_to_resistance = nearest_resistance - current_price
 
-                    # If SELL signal and price is within 1.0x ATR of support → block
+                    # If SELL signal and price is within 1.0x ATR of support → BLOCK (don't reverse)
                     if decision['direction'] == 'SELL' and dist_to_support < (atr_val * 1.0):
                         safe_log(self.logger, 'info',
                                  f"⛔ SELL blocked: price {current_price:.2f} too close to support "
-                                 f"{nearest_support:.2f} (dist: {dist_to_support:.2f} < {atr_val * 1.0:.2f})")
-                        # Consider reversal to BUY if support is strong (price has bounced before)
-                        if dist_to_support < (atr_val * 0.8) and decision['confidence'] > 0.5:
-                            safe_log(self.logger, 'info',
-                                     f"🔄 Reversing to BUY — near strong support, expecting bounce")
-                            decision['direction'] = 'BUY'
-                            # For reversal: use strongest (farthest) S/R levels for stop/TP
-                            # Stop below the lowest support, TP at the highest resistance
-                            all_supports = sr_levels.get('support', [])
-                            all_resistances = sr_levels.get('resistance', [])
-                            lowest_support = min(s['level'] for s in all_supports) if all_supports else nearest_support
-                            highest_resistance = max(r['level'] for r in all_resistances) if all_resistances else nearest_resistance
-                            sr_levels['nearest_support'] = lowest_support
-                            sr_levels['nearest_resistance'] = highest_resistance
-                            safe_log(self.logger, 'info',
-                                     f"  Reversal S/R: stop below {lowest_support:.2f}, "
-                                     f"TP at {highest_resistance:.2f}")
-                        else:
-                            log_warning(self.logger, "Signal rejected — selling into support")
-                            return None
+                                 f"{nearest_support:.2f} (dist: {dist_to_support:.2f} < {atr_val:.2f})")
+                        log_warning(self.logger, "Signal rejected — selling into support")
+                        return None
 
-                    # If BUY signal and price is within 1.0x ATR of resistance → block
+                    # If BUY signal and price is within 1.0x ATR of resistance → BLOCK (don't reverse)
                     elif decision['direction'] == 'BUY' and dist_to_resistance < (atr_val * 1.0):
                         safe_log(self.logger, 'info',
                                  f"⛔ BUY blocked: price {current_price:.2f} too close to resistance "
-                                 f"{nearest_resistance:.2f} (dist: {dist_to_resistance:.2f} < {atr_val * 1.0:.2f})")
-                        # Consider reversal to SELL if resistance is strong
-                        if dist_to_resistance < (atr_val * 0.8) and decision['confidence'] > 0.5:
-                            safe_log(self.logger, 'info',
-                                     f"🔄 Reversing to SELL — near strong resistance, expecting rejection")
-                            decision['direction'] = 'SELL'
-                            # For reversal: use strongest (farthest) S/R levels for stop/TP
-                            # Stop above the highest resistance, TP at the lowest support
-                            all_supports = sr_levels.get('support', [])
-                            all_resistances = sr_levels.get('resistance', [])
-                            highest_resistance = max(r['level'] for r in all_resistances) if all_resistances else nearest_resistance
-                            lowest_support = min(s['level'] for s in all_supports) if all_supports else nearest_support
-                            sr_levels['nearest_resistance'] = highest_resistance
-                            sr_levels['nearest_support'] = lowest_support
-                            safe_log(self.logger, 'info',
-                                     f"  Reversal S/R: stop above {highest_resistance:.2f}, "
-                                     f"TP at {lowest_support:.2f}")
-                        else:
-                            log_warning(self.logger, "Signal rejected — buying into resistance")
-                            return None
+                                 f"{nearest_resistance:.2f} (dist: {dist_to_resistance:.2f} < {atr_val:.2f})")
+                        log_warning(self.logger, "Signal rejected — buying into resistance")
+                        return None
 
                 # --- END S/R PROXIMITY FILTER ---
 

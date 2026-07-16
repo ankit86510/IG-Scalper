@@ -921,7 +921,23 @@ def main():
                         continue
 
                     # --- STRATEGY SIGNAL (existing) ---
-                    signal = strategy.on_bar(df)
+                    # Fetch higher timeframe data for multi-TF confirmation
+                    df_5min = None
+                    df_15min = None
+                    try:
+                        df_5min = aggregator.get_bars(epic, "5min", limit=100)
+                        if df_5min is not None and len(df_5min) < 20:
+                            df_5min = None
+                    except Exception:
+                        pass
+                    try:
+                        df_15min = aggregator.get_bars(epic, "15min", limit=50)
+                        if df_15min is not None and len(df_15min) < 25:
+                            df_15min = None
+                    except Exception:
+                        pass
+
+                    signal = strategy.on_bar(df, df_5min=df_5min, df_15min=df_15min)
 
                     # Hybrid mode: fallback to AI Pattern Recognizer if FVG returns no signal
                     if signal is None and strategy_type == "hybrid" and ai_strategy is not None:
