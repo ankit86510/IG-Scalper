@@ -560,7 +560,7 @@ class ConditionalOrderManager:
                 direction=tracked.direction,
                 stop_distance=tracked.stop_distance,
                 activation_pct=execution_config.get("trailing_activation_pct", 0.5),
-                trailing_distance_pct=execution_config.get("trailing_distance_pct", 0.5),
+                trailing_pct=execution_config.get("trailing_distance_pct", 0.5),
             )
 
         # Log fill event per Req 8.2

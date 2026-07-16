@@ -50,9 +50,8 @@ REST_RESOLUTION_MAP = {
 FIELDS = ["UTM", "BID_OPEN", "BID_HIGH", "BID_LOW", "BID_CLOSE", "CONS_END", "CONS_TICK_COUNT"]
 
 # Lightstreamer subscription mode for CHART items
-# DISTINCT: every tick update — needed for real-time forming bar price
-# MERGE: only changed fields — misses intermediate ticks
-CHART_MODE = "DISTINCT"
+# MERGE: IG requires MERGE mode for CHART subscriptions
+CHART_MODE = "MERGE"
 
 
 class _BarListener:
