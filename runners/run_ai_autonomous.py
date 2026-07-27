@@ -604,6 +604,17 @@ def main():
     )
     log.info(f"✓ Data aggregator ready")
 
+    # Subscribe to real-time TRADE and ACCOUNT streams via Lightstreamer
+    # These provide instant trade confirmations and equity updates without REST polling
+    if hasattr(aggregator, '_ls_provider') and aggregator._ls_provider and aggregator._ls_provider.is_connected():
+        ls = aggregator._ls_provider
+        ls.subscribe_trades()
+        ls.subscribe_account()
+        # Subscribe to live bid/offer prices for each epic (replaces deprecated MARKET: subscription)
+        for epic_to_sub in cfg["symbols"]:
+            ls.subscribe_price(epic_to_sub)
+        log.info(f"✓ Lightstreamer: TRADE + ACCOUNT + PRICE streams active")
+
     # Get configuration
     epics = cfg["symbols"]
     timeframe = cfg.get("timeframe", "5min")   # default 5min = 288 bars/24h
@@ -906,6 +917,7 @@ def main():
                         continue
 
                     if last_bar_time[epic] is not None and df.index[-1] == last_bar_time[epic]:
+                        log.debug(f"⏭️ {epic} — no new bar (last: {last_bar_time[epic]})")
                         continue
 
                     log.info(f"🔍 Analyzing {epic}...")
@@ -1025,10 +1037,12 @@ def main():
                                 stop_distance=signal["stop_pts"],
                                 pip_value=pip_value,
                                 min_size=mkt["dealingRules"]["minDealSize"]["value"],
-                                size_step=0.1
+                                size_step=0.1,
+                                epic=epic,
                             )
                             log.info(f"💰 Position sizer: {'PASS' if size is not None else 'REJECTED'} | "
                                      f"equity={size_meta.get('equity', 'N/A')}, "
+                                     f"risk_pct={size_meta.get('risk_pct', 'N/A')}%, "
                                      f"raw_size={size_meta.get('raw_size', 'N/A'):.4f}, "
                                      f"result={size}")
                             if size is None:
@@ -1048,8 +1062,20 @@ def main():
                             )
                             log.info(f"💰 Position sizer: FALLBACK (fixed sizing) | size={proposed_size}")
 
+                        # Enforce per-instrument minimum stop distance for the actual order
+                        effective_stop_pts = signal["stop_pts"]
+                        instrument_overrides = cfg["risk"].get("instrument_overrides", {})
+                        for prefix, overrides in instrument_overrides.items():
+                            if epic.startswith(prefix):
+                                min_stop = overrides.get("min_stop_pts", 0.0)
+                                if min_stop > 0 and effective_stop_pts < min_stop:
+                                    log.info(f"📏 Stop widened: {effective_stop_pts:.2f} → {min_stop:.2f} pts "
+                                             f"(min_stop_pts for {prefix})")
+                                    effective_stop_pts = min_stop
+                                break
+
                         stop_pts, tp_pts, adj_size = enforce_market_rules(
-                            mkt, signal["stop_pts"], signal["tp_pts"], proposed_size
+                            mkt, effective_stop_pts, signal["tp_pts"], proposed_size
                         )
 
                         if adj_size <= 0:
@@ -1144,8 +1170,52 @@ def main():
                                     if action == "placed":
                                         log.info(f"✅ CONDITIONAL ORDER PLACED: {result['details'].get('deal_reference', '')}")
                                     elif action == "fallback":
-                                        # Fallback already placed market order inside process_signal
-                                        log.info(f"📤 Fallback to market order (no S/R level)")
+                                        # Working order rejected or no S/R level — place market order
+                                        log.info(f"📤 Fallback to market order ({result['details'].get('reason', 'unknown')})")
+                                        try:
+                                            resp = ig.place_order(
+                                                epic,
+                                                direction,
+                                                adj_size,
+                                                stop_distance=stop_pts,
+                                                limit_distance=tp_pts if use_tp_limit else None,
+                                                tif=cfg["execution"]["time_in_force"]
+                                            )
+                                            deal_ref = resp.get('dealReference')
+                                            log.info(f"✅ MARKET ORDER PLACED: {deal_ref}")
+                                            try:
+                                                confirm = ig.confirm_deal(deal_ref)
+                                                deal_id = confirm.get('dealId', deal_ref)
+                                                deal_status = confirm.get('dealStatus', 'UNKNOWN')
+                                                log.info(f"✅ CONFIRMED: dealId={deal_id} | status={deal_status}")
+                                            except Exception as e:
+                                                log.warning(f"⚠️ Could not confirm deal: {e}")
+                                                deal_id = deal_ref
+
+                                            position_manager.add_position(
+                                                epic=epic,
+                                                deal_id=deal_id,
+                                                direction=direction,
+                                                size=adj_size,
+                                                entry_price=current_price,
+                                                stop=stop_pts,
+                                                tp=tp_pts if use_tp_limit else 0,
+                                                confidence=confidence,
+                                                patterns=patterns
+                                            )
+                                            if use_trailing:
+                                                trailing_manager.initialize(
+                                                    epic=epic,
+                                                    deal_id=deal_id,
+                                                    entry_price=current_price,
+                                                    direction=direction,
+                                                    stop_distance=stop_pts,
+                                                    activation_pct=trailing_activation_pct,
+                                                    trailing_pct=trailing_distance_pct
+                                                )
+                                        except Exception as e:
+                                            log.exception(f"❌ FALLBACK ORDER FAILED {epic}: {e}")
+                                            consecutive_losses += 1
                                     elif action == "rejected":
                                         log.warning(f"⚠️ Conditional order rejected: {result['details'].get('reason', '')}")
                                     elif action == "skipped":

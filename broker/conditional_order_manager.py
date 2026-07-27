@@ -267,6 +267,22 @@ class ConditionalOrderManager:
         try:
             confirm = self.ig_client.confirm_deal(deal_ref)
             deal_id = confirm.get("dealId", deal_ref)
+            confirm_status = confirm.get("dealStatus", "")
+            if confirm_status == "REJECTED":
+                reject_reason = confirm.get("reason", "unknown")
+                self.log.warning(
+                    f"Working order REJECTED by IG: epic={epic}, "
+                    f"reason={reject_reason}, deal_ref={deal_ref}, "
+                    f"entry_level={entry_level} — falling back to market order"
+                )
+                return {
+                    "action": "fallback",
+                    "details": {
+                        "reason": f"working_order_rejected_{reject_reason}",
+                        "epic": epic,
+                        "direction": direction,
+                    },
+                }
         except Exception as e:
             self.log.warning(
                 f"Could not confirm deal reference {deal_ref}: {e} — using dealReference as fallback"
