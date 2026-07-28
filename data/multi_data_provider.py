@@ -420,7 +420,7 @@ class IGPriceProvider:
     Rate limits (Demo):
     - 30 non-trading requests per minute (shared with /markets, /positions)
     - 10,000 historical price requests per week
-    - We budget conservatively: max 15 /prices calls per minute
+    - Budget managed by core.ig_rate_limiter.IGRateLimiter
 
     Resolution mapping:
     - 1min  -> MINUTE
@@ -458,22 +458,9 @@ class IGPriceProvider:
         "DAY": 500,
     }
 
-    def __init__(self, ig_client):
+    def __init__(self, ig_client, rate_limiter=None):
         self.ig_client = ig_client
-        self._request_times = []
-        self._max_per_minute = 15  # Conservative: 15 of 30 allowed/min
-        self._weekly_count = 0
-
-    def _check_rate_limit(self) -> bool:
-        """Check if we can make another request within rate limits."""
-        now = time.time()
-        self._request_times = [ts for ts in self._request_times if now - ts < 60]
-        return len(self._request_times) < self._max_per_minute
-
-    def _record_request(self):
-        """Record a request timestamp."""
-        self._request_times.append(time.time())
-        self._weekly_count += 1
+        self._rate_limiter = rate_limiter
 
     def get_bars(self, symbol: str, timeframe: str = "5min", limit: int = 200) -> pd.DataFrame:
         """Fetch OHLC bars from IG /prices endpoint.
@@ -488,15 +475,26 @@ class IGPriceProvider:
         """
         from data.ig_price_bars import bars_from_ig
 
-        if not self._check_rate_limit():
-            log_warning(logger, f"IG rate limit reached ({self._max_per_minute}/min), skipping")
-            return pd.DataFrame()
-
         resolution = self.RESOLUTION_MAP.get(timeframe, "MINUTE_5")
         max_bars = min(limit, self.MAX_BARS.get(resolution, 200))
 
+        # Check rate limiter before making request
+        if self._rate_limiter:
+            if not self._rate_limiter.can_request_prices(data_points=max_bars):
+                status = self._rate_limiter.get_status()
+                if status["prices_blocked"]:
+                    # Silent skip — already logged when blocked
+                    pass
+                else:
+                    safe_log(logger, 'debug',
+                             f"[IG] Budget exceeded for {symbol} — "
+                             f"daily: {status['daily_points_used']}/{status['daily_points_limit']}, "
+                             f"weekly: {status['weekly_points_used']}/{status['weekly_points_limit']}")
+                return pd.DataFrame()
+
         try:
-            self._record_request()
+            if self._rate_limiter:
+                self._rate_limiter.record_price_request(data_points=max_bars)
             prices = self.ig_client.get_prices(symbol, resolution=resolution, max=max_bars)
             df = bars_from_ig(prices, epic=symbol)
 
@@ -506,7 +504,13 @@ class IGPriceProvider:
             return df
 
         except Exception as e:
-            log_error(logger, f"IG Prices error for {symbol}: {e}")
+            error_str = str(e)
+            if "403" in error_str:
+                if self._rate_limiter:
+                    self._rate_limiter.record_price_403()
+                log_error(logger, f"IG Prices BLOCKED (403) for {symbol} — backing off")
+            else:
+                log_error(logger, f"IG Prices error for {symbol}: {e}")
             return pd.DataFrame()
 
 
@@ -541,6 +545,7 @@ class SmartDataAggregator:
                     cst=ig_client.cst,
                     x_security_token=ig_client.x_security_token,
                     ig_client=ig_client,
+                    account_id=getattr(ig_client, 'account_id', ''),
                 )
                 if self._ls_provider.is_connected():
                     log_success(logger, "Lightstreamer provider CONNECTED (primary, zero cost)")
@@ -552,12 +557,24 @@ class SmartDataAggregator:
             except Exception as e:
                 log_warning(logger, f"Lightstreamer init failed: {e} — using REST fallback")
 
+        # --- RATE LIMITER: Shared across IG REST and LS seeding ---
+        from core.ig_rate_limiter import IGRateLimiter
+        self._rate_limiter = IGRateLimiter()
+
+        # Pass rate limiter to Lightstreamer provider for IG REST seeding
+        if self._ls_provider:
+            self._ls_provider._rate_limiter = self._rate_limiter
+
         # IG REST API — hourly rotation with TwelveData (fallback when LS has no data)
         self._ig_provider = None
         self._twelvedata_provider = None
         if ig_client:
-            self._ig_provider = IGPriceProvider(ig_client)
+            self._ig_provider = IGPriceProvider(ig_client, rate_limiter=self._rate_limiter)
             log_success(logger, "IG Price provider initialized (REST fallback)")
+            status = self._rate_limiter.get_status()
+            safe_log(logger, 'info',
+                     f"[RateLimiter] Budget: weekly={status['weekly_points_used']}/{status['weekly_points_limit']}, "
+                     f"daily={status['daily_points_used']}/{status['daily_points_limit']}")
 
         # TwelveData — secondary source, spot prices for all asset classes
         if config.get("twelve_data_key"):
@@ -640,11 +657,11 @@ class SmartDataAggregator:
             },
 
             # Indices — Yahoo Finance cash index prices are spot-equivalent, OK to use
-            "IX.D.SPTRD.DAILY.IP": {
-                "IG": "IX.D.SPTRD.DAILY.IP",
-                "TwelveData": "SPX",
-                "YahooFinance": "^GSPC",
-                "AlphaVantage": "SPX"
+            "IX.D.SPTRD.IEB.IP": {
+                "IG": "IX.D.SPTRD.IEB.IP",
+                # NOTE: TwelveData "SPX" excluded — requires paid plan, wastes API credits
+                # NOTE: Yahoo "^GSPC" excluded — cash index price differs ~68pts from IG CFD
+                # Only IG sources (REST + Lightstreamer) provide consistent pricing
             },
             "IX.D.FTSE.CFD.IP": {
                 "IG": "IX.D.FTSE.CFD.IP",

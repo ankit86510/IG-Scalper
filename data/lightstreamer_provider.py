@@ -28,13 +28,20 @@ from typing import Dict, Optional
 logger = logging.getLogger(__name__)
 
 # IG Lightstreamer scale codes
+# NOTE: IG only supports TICK, SECOND, 1MINUTE, 5MINUTE, and HOUR.
+# 3MINUTE, 15MINUTE, 30MINUTE are NOT valid — build from lower TF instead.
 SCALE_MAP = {
     "1min":  "1MINUTE",
-    "3min":  "3MINUTE",
     "5min":  "5MINUTE",
-    "15min": "15MINUTE",
-    "30min": "30MINUTE",
     "60min": "HOUR",
+}
+
+# Timeframes that must be built by aggregating a lower timeframe
+# key = requested timeframe, value = (source_timeframe, aggregation_factor)
+AGGREGATE_MAP = {
+    "3min":  ("1min", 3),
+    "15min": ("5min", 3),
+    "30min": ("5min", 6),
 }
 
 # IG REST resolution codes for pre-seeding history
@@ -437,6 +444,15 @@ class LightstreamerProvider:
             max_bars:  Max bars to keep in memory ring buffer
             seed_bars: Bars to load on startup. Default 288 = 24h at 5min.
         """
+        # Aggregated timeframes don't need their own subscription —
+        # they are built from a lower timeframe in get_bars()
+        if timeframe in AGGREGATE_MAP:
+            source_tf, _ = AGGREGATE_MAP[timeframe]
+            # Ensure the source timeframe is subscribed instead
+            if f"{epic}:{source_tf}" not in self._listeners:
+                self.subscribe(epic, source_tf, max_bars, seed_bars)
+            return
+
         if not self._connected or self._client is None:
             logger.error("[LS] Not connected — cannot subscribe")
             return
@@ -497,16 +513,27 @@ class LightstreamerProvider:
             # Fallback to IG REST if TwelveData didn't work
             if not seeded and self.ig_client:
                 try:
-                    from data.ig_price_bars import bars_from_ig
-                    resolution = REST_RESOLUTION_MAP.get(timeframe, "MINUTE")
-                    raw = self.ig_client.get_prices(epic, resolution=resolution,
-                                                    max=min(seed_bars, 1000))
-                    hist_df = bars_from_ig(raw, epic)
-                    if not hist_df.empty:
-                        listener.seed_history(hist_df)
-                        logger.info(f"[LS] Seeded {len(hist_df)} bars from IG REST")
-                        seeded = True
+                    # Check rate limiter before calling /prices
+                    from core.ig_rate_limiter import IGRateLimiter
+                    _limiter = getattr(self, '_rate_limiter', None)
+                    seed_limit = min(seed_bars, 1000)
+                    if _limiter and not _limiter.can_request_prices(data_points=seed_limit):
+                        logger.info(f"[LS] IG REST seed skipped — rate limit budget exceeded")
+                    else:
+                        from data.ig_price_bars import bars_from_ig
+                        resolution = REST_RESOLUTION_MAP.get(timeframe, "MINUTE")
+                        if _limiter:
+                            _limiter.record_price_request(data_points=seed_limit)
+                        raw = self.ig_client.get_prices(epic, resolution=resolution,
+                                                        max=seed_limit)
+                        hist_df = bars_from_ig(raw, epic)
+                        if not hist_df.empty:
+                            listener.seed_history(hist_df)
+                            logger.info(f"[LS] Seeded {len(hist_df)} bars from IG REST")
+                            seeded = True
                 except Exception as e:
+                    if "403" in str(e) and _limiter:
+                        _limiter.record_price_403()
                     logger.warning(f"[LS] IG REST seed failed: {e}")
 
         self._subscribe_raw(epic, timeframe, listener)
@@ -520,7 +547,20 @@ class LightstreamerProvider:
         The strategy uses df.iloc[-2] as the signal bar (penultimate),
         so the forming bar at iloc[-1] is ignored by design.
         Requires at least 2 bars to be useful — returns empty if fewer.
+
+        For timeframes not natively supported by IG (15min, 30min, 3min),
+        aggregates from the nearest supported lower timeframe.
         """
+        # Check if this timeframe needs aggregation from a lower TF
+        if timeframe in AGGREGATE_MAP:
+            source_tf, factor = AGGREGATE_MAP[timeframe]
+            # Fetch more bars from source to produce enough aggregated bars
+            source_limit = limit * factor + factor  # extra bars for forming bar
+            source_df = self.get_bars(epic, source_tf, source_limit)
+            if source_df.empty or len(source_df) < factor:
+                return pd.DataFrame()
+            return self._aggregate_bars(source_df, factor, limit)
+
         sub_key = f"{epic}:{timeframe}"
 
         if sub_key not in self._listeners:
@@ -545,6 +585,72 @@ class LightstreamerProvider:
 
     def is_connected(self) -> bool:
         return self._connected
+
+    def _aggregate_bars(self, source_df: pd.DataFrame, factor: int,
+                        limit: int) -> pd.DataFrame:
+        """Aggregate lower-timeframe bars into higher-timeframe bars.
+
+        Groups source bars by floor-dividing their index position by `factor`,
+        producing OHLCV bars at the higher timeframe.
+
+        Args:
+            source_df: DataFrame with DatetimeIndex and OHLCV columns
+            factor:    Number of source bars per aggregated bar (e.g. 3 for 5min→15min)
+            limit:     Max number of aggregated bars to return
+        """
+        if source_df.empty:
+            return pd.DataFrame()
+
+        # Drop the last (forming) bar before aggregating — it's incomplete
+        # We'll add it back as the forming bar of the aggregated result
+        completed = source_df.iloc[:-1]
+        forming_bar = source_df.iloc[-1:]
+
+        if len(completed) < factor:
+            return pd.DataFrame()
+
+        # Trim to an exact multiple of factor from the end
+        trim = len(completed) % factor
+        if trim > 0:
+            completed = completed.iloc[trim:]
+
+        # Group into chunks of `factor` bars
+        n_groups = len(completed) // factor
+        records = []
+        for i in range(n_groups):
+            chunk = completed.iloc[i * factor: (i + 1) * factor]
+            records.append({
+                "ts": chunk.index[0],  # Timestamp of the first bar in group
+                "open": chunk["open"].iloc[0],
+                "high": chunk["high"].max(),
+                "low": chunk["low"].min(),
+                "close": chunk["close"].iloc[-1],
+                "volume": chunk["volume"].sum() if "volume" in chunk.columns else 0,
+            })
+
+        # Build the current forming aggregated bar from remaining source bars
+        # that haven't completed a full group yet, plus the actual forming bar
+        remaining_completed = len(completed) - (n_groups * factor)  # should be 0 after trim
+        forming_source = pd.concat([completed.iloc[-(remaining_completed):], forming_bar]) if remaining_completed > 0 else forming_bar
+        if not forming_source.empty:
+            records.append({
+                "ts": forming_source.index[0],
+                "open": forming_source["open"].iloc[0],
+                "high": forming_source["high"].max(),
+                "low": forming_source["low"].min(),
+                "close": forming_source["close"].iloc[-1],
+                "volume": forming_source["volume"].sum() if "volume" in forming_source.columns else 0,
+            })
+
+        if not records:
+            return pd.DataFrame()
+
+        agg_df = pd.DataFrame(records)
+        agg_df.set_index("ts", inplace=True)
+        agg_df.index.name = None
+
+        # Return last `limit` bars
+        return agg_df.iloc[-limit:]
 
     def disconnect(self):
         if self._client:

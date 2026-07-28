@@ -884,6 +884,15 @@ def main():
 
                 report_path = save_analysis_report(position_manager)
                 log.info(f"📄 Report saved: {report_path}")
+
+                # Log rate limiter status
+                if hasattr(aggregator, '_rate_limiter'):
+                    rl_status = aggregator._rate_limiter.get_status()
+                    log.info(f"📡 API Budget: "
+                             f"weekly={rl_status['weekly_points_used']}/{rl_status['weekly_points_limit']} | "
+                             f"daily={rl_status['daily_points_used']}/{rl_status['daily_points_limit']} | "
+                             f"prices_blocked={'YES' if rl_status['prices_blocked'] else 'no'}")
+
                 last_report_time = time.time()
 
             # Check risk lockouts
