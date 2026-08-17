@@ -45,6 +45,7 @@ class IGClient:
         self.ls_endpoint = body.get("lightstreamerEndpoint", "")
         self.cst = r.headers.get("CST", "")
         self.x_security_token = r.headers.get("X-SECURITY-TOKEN", "")
+        self.account_id = body.get("currentAccountId", "")
         return True
 
     def _hv(self, v="1"):

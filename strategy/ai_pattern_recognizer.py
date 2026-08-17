@@ -681,7 +681,25 @@ class AIPatternRecognizer(Strategy):
         # 5-min momentum must agree with 1-min signal direction
         # 15-min trend must agree with 1-min signal direction
         if df_5min is not None and len(df_5min) >= 20:
+            # Log the data range used for 5min confirmation
+            _5m_first = df_5min.iloc[0]
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 5min data: {len(df_5min)} bars | "
+                     f"range: {df_5min.index[0]} → {df_5min.index[-1]} | "
+                     f"penultimate: {df_5min.index[-2]}")
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 5min first bar @ {df_5min.index[0]}: "
+                     f"O={_5m_first['open']:.2f} H={_5m_first['high']:.2f} "
+                     f"L={_5m_first['low']:.2f} C={_5m_first['close']:.2f}")
+            _5m_bar = df_5min.iloc[-2]
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 5min penultimate bar @ {df_5min.index[-2]}: "
+                     f"O={_5m_bar['open']:.2f} H={_5m_bar['high']:.2f} "
+                     f"L={_5m_bar['low']:.2f} C={_5m_bar['close']:.2f}")
             mtf_momentum = self.analyze_momentum(df_5min)
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 5min momentum: RSI={mtf_momentum.get('rsi', 'N/A')}, "
+                     f"ROC={mtf_momentum.get('roc', 'N/A')}")
             if mtf_momentum["direction"] != "NEUTRAL" and mtf_momentum["direction"] != decision["direction"].replace("BUY", "BULLISH").replace("SELL", "BEARISH"):
                 safe_log(self.logger, 'info',
                          f"⛔ 5min momentum ({mtf_momentum['direction']}) opposes "
@@ -691,7 +709,25 @@ class AIPatternRecognizer(Strategy):
                      f"✓ 5min momentum: {mtf_momentum['direction']} (confirms {decision['direction']})")
 
         if df_15min is not None and len(df_15min) >= 25:
+            # Log the data range used for 15min confirmation
+            _15m_first = df_15min.iloc[0]
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 15min data: {len(df_15min)} bars | "
+                     f"range: {df_15min.index[0]} → {df_15min.index[-1]} | "
+                     f"penultimate: {df_15min.index[-2]}")
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 15min first bar @ {df_15min.index[0]}: "
+                     f"O={_15m_first['open']:.2f} H={_15m_first['high']:.2f} "
+                     f"L={_15m_first['low']:.2f} C={_15m_first['close']:.2f}")
+            _15m_bar = df_15min.iloc[-2]
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 15min penultimate bar @ {df_15min.index[-2]}: "
+                     f"O={_15m_bar['open']:.2f} H={_15m_bar['high']:.2f} "
+                     f"L={_15m_bar['low']:.2f} C={_15m_bar['close']:.2f}")
             mtf_trend = self.detect_trend_strength(df_15min)
+            safe_log(self.logger, 'debug',
+                     f"[MTF] 15min trend: ADX={mtf_trend.get('adx', 'N/A')}, "
+                     f"direction={mtf_trend['direction']}, strength={mtf_trend['strength']:.2f}")
             if mtf_trend["direction"] != "NEUTRAL" and mtf_trend["direction"] != decision["direction"].replace("BUY", "BULLISH").replace("SELL", "BEARISH"):
                 safe_log(self.logger, 'info',
                          f"⛔ 15min trend ({mtf_trend['direction']}) opposes "
@@ -775,8 +811,9 @@ class AIPatternRecognizer(Strategy):
                 sr_levels = self.sr_detector.detect_all_levels(df)
                 original_stop, original_tp = stop_pts, tp_pts
 
-                # --- S/R PROXIMITY FILTER ---
+                # --- S/R PROXIMITY FILTER + BREAKOUT CONFIRMATION ---
                 # Don't sell into strong support or buy into strong resistance
+                # unless breakout is CONFIRMED (multiple candles closed beyond)
                 current_price = df['close'].iloc[-2]
                 nearest_support = sr_levels.get('nearest_support')
                 nearest_resistance = sr_levels.get('nearest_resistance')
@@ -785,21 +822,58 @@ class AIPatternRecognizer(Strategy):
                     dist_to_support = current_price - nearest_support
                     dist_to_resistance = nearest_resistance - current_price
 
-                    # If SELL signal and price is within 1.0x ATR of support → BLOCK (don't reverse)
-                    if decision['direction'] == 'SELL' and dist_to_support < (atr_val * 1.0):
-                        safe_log(self.logger, 'info',
-                                 f"⛔ SELL blocked: price {current_price:.2f} too close to support "
-                                 f"{nearest_support:.2f} (dist: {dist_to_support:.2f} < {atr_val:.2f})")
-                        log_warning(self.logger, "Signal rejected — selling into support")
-                        return None
+                    # Get zone strength for proximity decisions
+                    resistance_zones = sr_levels.get('resistance', [])
+                    support_zones = sr_levels.get('support', [])
+                    nearest_res_strength = resistance_zones[0].get('strength', 0.5) if resistance_zones else 0.5
+                    nearest_sup_strength = support_zones[0].get('strength', 0.5) if support_zones else 0.5
 
-                    # If BUY signal and price is within 1.0x ATR of resistance → BLOCK (don't reverse)
-                    elif decision['direction'] == 'BUY' and dist_to_resistance < (atr_val * 1.0):
-                        safe_log(self.logger, 'info',
-                                 f"⛔ BUY blocked: price {current_price:.2f} too close to resistance "
-                                 f"{nearest_resistance:.2f} (dist: {dist_to_resistance:.2f} < {atr_val:.2f})")
-                        log_warning(self.logger, "Signal rejected — buying into resistance")
-                        return None
+                    # Proximity threshold: stronger zones need more distance
+                    # Base: 1.5x ATR for strong zones, 1.0x ATR for weak zones
+                    res_proximity_atr_mult = 1.5 if nearest_res_strength >= 0.4 else 1.0
+                    sup_proximity_atr_mult = 1.5 if nearest_sup_strength >= 0.4 else 1.0
+
+                    if decision['direction'] == 'BUY' and dist_to_resistance < (atr_val * res_proximity_atr_mult):
+                        # Price is near resistance — check for confirmed breakout
+                        # Breakout confirmed = at least 2 of the last 3 completed candles
+                        # closed ABOVE the resistance level
+                        lookback_candles = df['close'].iloc[-4:-1]  # last 3 completed candles
+                        candles_above = sum(1 for c in lookback_candles if c > nearest_resistance)
+
+                        if candles_above >= 2:
+                            # Breakout confirmed — resistance is now broken, allow entry
+                            safe_log(self.logger, 'info',
+                                     f"✓ BREAKOUT CONFIRMED: {candles_above}/3 candles closed above "
+                                     f"resistance {nearest_resistance:.2f} — BUY allowed")
+                        else:
+                            # Not confirmed — price is just touching resistance, block
+                            safe_log(self.logger, 'info',
+                                     f"⛔ BUY blocked: price {current_price:.2f} near resistance "
+                                     f"{nearest_resistance:.2f} (dist: {dist_to_resistance:.2f}, "
+                                     f"threshold: {atr_val * res_proximity_atr_mult:.2f}) "
+                                     f"— breakout NOT confirmed ({candles_above}/3 candles above)")
+                            log_warning(self.logger, "Signal rejected — buying into unbroken resistance")
+                            return None
+
+                    elif decision['direction'] == 'SELL' and dist_to_support < (atr_val * sup_proximity_atr_mult):
+                        # Price is near support — check for confirmed breakdown
+                        lookback_candles = df['close'].iloc[-4:-1]  # last 3 completed candles
+                        candles_below = sum(1 for c in lookback_candles if c < nearest_support)
+
+                        if candles_below >= 2:
+                            # Breakdown confirmed — support is now broken, allow entry
+                            safe_log(self.logger, 'info',
+                                     f"✓ BREAKDOWN CONFIRMED: {candles_below}/3 candles closed below "
+                                     f"support {nearest_support:.2f} — SELL allowed")
+                        else:
+                            # Not confirmed — price is just touching support, block
+                            safe_log(self.logger, 'info',
+                                     f"⛔ SELL blocked: price {current_price:.2f} near support "
+                                     f"{nearest_support:.2f} (dist: {dist_to_support:.2f}, "
+                                     f"threshold: {atr_val * sup_proximity_atr_mult:.2f}) "
+                                     f"— breakdown NOT confirmed ({candles_below}/3 candles below)")
+                            log_warning(self.logger, "Signal rejected — selling into unbroken support")
+                            return None
 
                 # --- END S/R PROXIMITY FILTER ---
 

@@ -31,6 +31,7 @@ from broker.order_exec import enforce_market_rules, estimate_pip_value
 from broker.conditional_order_manager import ConditionalOrderManager
 from strategy.ai_pattern_recognizer import AIPatternRecognizer
 from strategy.fvg_strategy import FVGStrategy
+from strategy.llm_reasoning_filter import LLMReasoningFilter
 from strategy.ml_filter import MLDirectionalFilter
 from strategy.sentiment_filter import SentimentFilter
 from strategy.volatility_filter import VolatilityRegimeFilter
@@ -44,16 +45,52 @@ logger = logging.getLogger(__name__)
 class TrailingStopManager:
     """Enhanced Trailing Stop Manager with IG Broker Integration"""
 
-    def __init__(self, ig_client, log):
+    def __init__(self, ig_client, log, instrument_overrides=None):
         self.ig_client = ig_client
         self.log = log
+        self.instrument_overrides = instrument_overrides or {}
         self.trailing_stops = {}
+
+    def activation_distance(self, epic, stop_distance, activation_pct):
+        """Return a fixed per-instrument trigger when configured, otherwise a stop percentage."""
+        default_distance = stop_distance * activation_pct
+
+        for prefix, overrides in self.instrument_overrides.items():
+            if not epic.startswith(prefix):
+                continue
+
+            configured_distance = overrides.get("trailing_activation_pts")
+            if configured_distance is None:
+                break
+
+            try:
+                configured_distance = float(configured_distance)
+            except (TypeError, ValueError):
+                self.log.warning(
+                    f"Invalid trailing_activation_pts for {prefix}: {configured_distance!r}; "
+                    f"using {default_distance:.2f} pts"
+                )
+                break
+
+            if configured_distance <= 0:
+                self.log.warning(
+                    f"trailing_activation_pts must be positive for {prefix}; "
+                    f"using {default_distance:.2f} pts"
+                )
+                break
+
+            return configured_distance
+
+        return default_distance
 
     def initialize(self, epic, deal_id, entry_price, direction, stop_distance,
                    activation_pct=0.3, trailing_pct=0.5):
-        """Initialize trailing stop with deal ID for broker updates"""
+        """Initialize trailing stop with deal ID for broker updates."""
         initial_stop_level = (entry_price - stop_distance if direction == 'BUY'
                              else entry_price + stop_distance)
+        activation_distance = self.activation_distance(
+            epic, stop_distance, activation_pct
+        )
 
         self.trailing_stops[epic] = {
             'deal_id': deal_id,  # ✅ Store deal ID
@@ -63,7 +100,7 @@ class TrailingStopManager:
             'current_stop_level': initial_stop_level,
             'best_price': entry_price,
             'trailing_pct': trailing_pct,
-            'activation_distance': stop_distance * activation_pct,
+            'activation_distance': activation_distance,
             'active': False,
             'total_trailed': 0.0
         }
@@ -693,11 +730,13 @@ def main():
         config=cfg.get("sentiment_filter", {}),
         ig_client=ig
     )
+    llm_reasoning_filter = LLMReasoningFilter(cfg.get("llm_reasoning", {}))
     vol_filter = VolatilityRegimeFilter(cfg.get("volatility_filter", {}))
     position_sizer = RiskPositionSizer(cfg.get("risk", {}), ig)
 
     log.info(f"✓ ML Directional Filter: {'ENABLED' if ml_filter.is_enabled else 'DISABLED (will train on first data)'}")
     log.info(f"✓ Sentiment Filter: {'ENABLED' if sentiment_filter.is_enabled else 'DISABLED'}")
+    log.info(f"✓ LLM Reasoning Gate: {'ENABLED (veto-only)' if llm_reasoning_filter.is_enabled else 'DISABLED'}")
     log.info(f"✓ Volatility Regime Filter: {'ENABLED' if vol_filter.enabled else 'DISABLED'}")
     log.info(f"✓ Risk Position Sizer: dynamic={'ENABLED' if cfg['risk'].get('use_dynamic_sizing', True) else 'DISABLED'}")
 
@@ -716,7 +755,11 @@ def main():
 
     # Initialize managers
     position_manager = PositionManager(log)
-    trailing_manager = TrailingStopManager(ig_client=ig, log=log)  # ✅ Pass IG client
+    trailing_manager = TrailingStopManager(
+        ig_client=ig,
+        log=log,
+        instrument_overrides=cfg["risk"].get("instrument_overrides", {}),
+    )
 
     # Initialize Conditional Order Manager (if enabled in config)
     cond_order_mgr = None
@@ -1006,6 +1049,32 @@ def main():
                             last_bar_time[epic] = df.index[-1]
                             continue
 
+                        # --- LLM REASONING GATE (after deterministic filters, before sizing) ---
+                        llm_confirmed, llm_meta = llm_reasoning_filter.confirm_signal(
+                            epic=epic,
+                            signal=signal,
+                            df=df,
+                            df_5min=df_5min,
+                            df_15min=df_15min,
+                            additional_context={
+                                "volatility": vol_meta,
+                                "sentiment": sentiment_meta,
+                            },
+                        )
+                        signal.setdefault("meta", {}).update({"llm_reasoning": llm_meta})
+                        log.info(
+                            f"🧩 LLM reasoning: "
+                            f"{'APPROVED' if llm_confirmed else 'REJECTED'} | "
+                            f"decision={llm_meta.get('decision', 'N/A')} | "
+                            f"confidence={llm_meta.get('confidence', 'N/A')} | "
+                            f"cache_hit={llm_meta.get('cache_hit', False)}"
+                        )
+                        log.info(f"🧩 LLM reason: {llm_meta.get('reason', 'none')}")
+                        if not llm_confirmed:
+                            log.info(f"🧩 LLM reasoning REJECTED {epic} — no order")
+                            last_bar_time[epic] = df.index[-1]
+                            continue
+
                         patterns = meta.get("patterns_detected", [])
 
                         log.info("=" * 60)
@@ -1131,7 +1200,12 @@ def main():
                                 log.info(f"   Size: {adj_size} | Stop: {stop_pts:.2f} | TP: {'NONE (trailing only)' if not use_tp_limit else f'{tp_pts:.2f}'}")
 
                                 if use_trailing:
-                                    log.info(f"   Trailing: Will activate after {stop_pts * trailing_activation_pct:.2f} pts profit")
+                                    activation_distance = trailing_manager.activation_distance(
+                                        epic, stop_pts, trailing_activation_pct
+                                    )
+                                    log.info(
+                                        f"   Trailing: Will activate after {activation_distance:.2f} pts profit"
+                                    )
 
                                 # --- CONDITIONAL ORDER vs MARKET ORDER ---
                                 if cond_order_mgr and cond_order_mgr.enabled:

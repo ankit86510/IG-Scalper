@@ -26,8 +26,24 @@ alphavantage:
 finnhub:
   api_key: "${FINNHUB_KEY}"
 
+# Optional LLM reasoning gate. It is veto-only: the model may approve or reject
+# an existing deterministic signal, but cannot alter side, size, stops, targets,
+# or broker/risk rules. Compatible with OpenAI-style /chat/completions endpoints.
+llm_reasoning:
+  enabled: false
+  endpoint: "${LLM_API_URL}"
+  api_key: "${LLM_API_KEY}"
+  model: "${LLM_MODEL}"
+  timeout_seconds: 15
+  max_requests_per_minute: 2
+  max_requests_per_day: 100
+  max_completed_bars_per_timeframe: 12
+  min_approval_confidence: 0.65
+  failure_mode: "reject"            # reject is safest when model/API is unavailable
+  response_format_json: true
+
 ml_filter:
-  enabled: true
+  enabled: false
   probability_threshold: 0.50
   rolling_window_bars: 3000
   retrain_interval_hours: 1
@@ -52,6 +68,42 @@ risk:
   equity_refresh_interval_seconds: 300
   use_dynamic_sizing: true
   max_size_multiple: 50
+
+  # Per-instrument risk overrides (epic pattern → override params)
+  # Unmatched instruments use the defaults above
+  instrument_overrides:
+    # Gold: aggressive sizing, tight stops OK on high-vol commodity
+    "CS.D.CFEGOLD":
+      risk_pct_per_trade: 2.0
+      max_size_multiple: 50
+      min_stop_pts: 8.0
+
+    # Indices: conservative — large notional per point, wider stops needed
+    "IX.D.SPTRD":
+      risk_pct_per_trade: 1.0
+      max_size_multiple: 10
+      min_stop_pts: 15.0
+      trailing_activation_pts: 3.0  # Fixed trigger; do not scale with an ATR-widened stop
+
+    "IX.D.NASDAQ":
+      risk_pct_per_trade: 1.0
+      max_size_multiple: 10
+      min_stop_pts: 20.0
+
+    "IX.D.DOW":
+      risk_pct_per_trade: 1.0
+      max_size_multiple: 10
+      min_stop_pts: 20.0
+
+    "IX.D.FTSE":
+      risk_pct_per_trade: 1.0
+      max_size_multiple: 10
+      min_stop_pts: 10.0
+
+    "IX.D.DAX":
+      risk_pct_per_trade: 1.0
+      max_size_multiple: 10
+      min_stop_pts: 15.0
 
 conditional_orders:
   enabled: true
@@ -135,7 +187,10 @@ symbols:
 
   # Commodities
   - "CS.D.CFEGOLD.CEB.IP"  # Gold
-  # - "CMD.USCrude.CFD.IP"   # Crude Oil
+  # - "CMD.USCrude.CFD.IP"   # Crude Oil (requires TwelveData paid plan)
+
+  # Indices
+  - "IX.D.SPTRD.IEB.IP"  # S&P 500 Cash ($1/point)
 
 logging:
   level: "DEBUG"  # DEBUG for detailed analysis, INFO for normal operation
